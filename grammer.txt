@@ -1,0 +1,12 @@
+1               :      1
+0               :      0
+
+|               :      or
+&               :      and
+^               :      xor
+~/!             :      not
+
+x<numbers>      :      variable, x indicates variable.
+
+><variable>     :      store into variable.
+<<variable>     :      print variable.
