@@ -10,3 +10,5 @@ x<numbers>      :      variable, x indicates variable.
 
 ><variable>     :      store into variable.
 <<variable>     :      print variable.
+
+accumulate into lhs
