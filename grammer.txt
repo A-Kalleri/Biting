@@ -12,3 +12,7 @@ x<numbers>      :      variable, x indicates variable.
 <<variable>     :      print variable.
 
 accumulate into lhs
+
+start -> fill_buffer -> lexer -> parser -> end
+              ^                    |
+              |____________________|

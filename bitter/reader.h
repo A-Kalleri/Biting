@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-typedef struct {
+typedef struct source_buf {
 
     FILE *file_ptr;
     uint8_t *buffer;
