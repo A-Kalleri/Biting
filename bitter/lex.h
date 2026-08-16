@@ -15,26 +15,27 @@ typedef enum {
         TOKEN_NOT,
         TOKEN_FEED,
         TOKEN_READ,
+        TOKEN_IDENTIFIER,
+        TOKEN_EOF,
+        TOKEN_RD_ERR,
 
 } token_type_t;
 
 typedef struct {
 
         token_type_t type;
-        const uint8_t *value;
-        uint8_t length;
+        int value;
 
 } token_t;
 
 typedef struct {
 
         source_buf_t *source;
-        size_t position;
-        size_t line;
-        size_t column;
 
 } lex_t;
 
+const char *tok_to_s (token_type_t type);
+
 lex_t *lex_constructor ();
-void *lex_destructor (lex_t **lex_o);
+void lex_destructor (lex_t **lex_o);
 token_t lex_next (lex_t *lex_o);

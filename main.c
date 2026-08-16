@@ -12,10 +12,22 @@ int main (void) {
 
         lex_t *lex = lex_constructor();
 
-        for (int i = 0; i < 3; ++i) {
+        for (;;) {
 
                 token_t tok = lex_next(lex);
-                printf("%d: %s\n", tok.type, tok.value);
+                if (tok.type == TOKEN_IDENTIFIER) {
+                        printf("%s: %d\n", tok_to_s(tok.type), tok.value);
+                } else {
+                        printf("%s: %c\n", tok_to_s(tok.type), tok.value);
+                }
+
+                if (tok.type == TOKEN_RD_ERR) {
+                        return 1;
+                }
+
+                if (tok.type == TOKEN_EOF) {
+                        break;
+                }
 
         //        if (sbuf -> position == sbuf -> length) {
         //                if (read_to_buffer(sbuf) != 0) {

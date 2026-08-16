@@ -1,1 +1,120 @@
-1 1 1
+; ============================================================
+; LEXER TEST FILE
+; ============================================================
+
+; --- Basic tokens ---
+1 0 | & ^ ~ ! > <
+
+; --- Tokens separated by newlines ---
+1
+0
+|
+&
+^
+~
+!
+>
+<
+
+; --- Valid identifiers ---
+x0
+x1
+x9
+x10
+x01
+x000
+x123456789
+x12345678901234567890
+
+; --- Valid identifiers next to other tokens ---
+x0|x1
+x12&x34
+x56^x78
+~x0
+!x1
+x2>x3
+x4<x5
+
+; --- Whitespace ---
+1    0
+1	0
+1
+0
+1 \r
+0
+
+; --- Comments ---
+; comment
+1 ; inline comment
+0
+; another comment
+x123 ; comment after identifier
+
+; --- Consecutive comments ---
+; comment 1
+; comment 2
+; comment 3
+1
+
+; --- Unknown characters ---
+a
+b
+c
+d
+f
+g
+z
+_
+@
+#
+$
+%
+?
+.
+
+; --- Malformed identifiers ---
+x
+x|
+x&
+x^
+x~
+x!
+x>
+x<
+x;
+x 
+xabc
+x_123
+x-123
+x+123
+
+; --- Unknown strings ---
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+hello
+abc123
+123abc
+
+; --- Long sequences ---
+111111111111111111111111111111111111111111
+000000000000000000000000000000000000000000
+
+; --- Buffer-boundary tests ---
+x123456789012345678901234567890
+1|&^~!><0
+x1x2x3x4x5
+
+; --- Tokens with no whitespace ---
+1|&^~!><0
+x1|x2&x3^x4
+~x123!x456
+
+; --- Comments at different positions ---
+; comment before token
+1;comment after token
+0
+x123;comment after identifier
+|;comment after operator
+
+; --- Final token ---
+x999999999999999999999999999999999999999999
