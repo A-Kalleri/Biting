@@ -16,3 +16,46 @@ accumulate into lhs
 start -> fill_buffer -> lexer -> parser -> end
               ^                    |
               |____________________|
+
+
+program         := statement*
+
+statement       := expression
+                 | expression > identifier
+                 | reserved_register < identifier
+                 | identifier < identifier
+
+expression      := operand
+                 | operand operator operand
+
+operand         := 0
+                 | 1
+                 | identifer
+                 | NOT operand
+
+operator        := |
+                 | &
+                 | ^
+
+
+fix integer overflow 'report lexical error' fix => {
+
+                int c = get_char(lex_o -> source);
+                if (!IS_NUM[c]) {
+                        return 0;
+                }
+
+                if (*value < 0) {
+                        *value = 0;
+                }
+
+                if (*value > INT_MAX / 10 || (*value == INT_MAX / 10 && c - '0' > INT_MAX 10)) {
+                        return <OVERFLOW>;
+                }
+
+                *value = *value * 10 + (c - '0');
+
+                consume(lex_o -> source);
+
+end}
+
