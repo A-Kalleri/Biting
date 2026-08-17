@@ -204,7 +204,7 @@ static int lex_identifier (lex_t *lex_o, int *value) {
                 }
 
                 if (*value > INT_MAX / 10 || (*value == INT_MAX / 10 && c - '0' > INT_MAX % 10)) {
-                        return 9165119; // overflow
+                        return IDENTIFIER_OVERFLOW; // overflow
                 }
 
                 *value = *value * 10 + (c - '0');
@@ -316,7 +316,7 @@ token_t lex_next (lex_t *lex_o) {
                         return get_tok_rderr();
                 }
 
-                if (status == 9165119) { // overflow
+                if (status == IDENTIFIER_OVERFLOW) { // overflow
                         return get_tok_unknown('x');
                 }
 
