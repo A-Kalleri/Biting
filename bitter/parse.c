@@ -102,6 +102,104 @@ parse_t *parse_constructor (void) {
 
 }
 
+void advance_parse (parse_t *parse_o) {
+        parse_o -> current = lex_next(parse_o -> lex);
+}
+
+static int parse_operand(parse_t *parse_o) {
+        
+        switch (parse_o -> current.type) {
+                case TOKEN_HIGH:
+                        return 1;
+                case TOKEN_LOW:
+                        return 0;
+                case TOKEN_IDENTIFIER: // token holds the value
+                        return parse_o -> current.value;
+                
+                case TOKEN_NOT:
+                        return !parse_o -> reg_o -> lhs;
+
+        }
+
+}
+
+static int parse_operator(parse_t *parse_o) {
+
+        parse_o -> reg_o -> lhs = parse_operand(parse_o);
+        printf("lhs: stages: %d\n", parse_o -> reg_o -> lhs);
+        advance_parse(parse_o);
+
+        switch (parse_o -> current.type) {
+
+        case TOKEN_OR:
+                advance_parse(parse_o);
+                parse_o -> reg_o -> lhs = parse_o -> reg_o -> lhs | parse_operand(parse_o);
+                advance_parse(parse_o);
+                break;
+
+        case TOKEN_AND:
+                advance_parse(parse_o);
+                parse_o -> reg_o -> lhs = parse_o -> reg_o -> lhs & parse_operand(parse_o);
+                advance_parse(parse_o);
+                break;
+
+        case TOKEN_XOR:
+                advance_parse(parse_o);
+                parse_o -> reg_o -> lhs = parse_o -> reg_o -> lhs ^ parse_operand(parse_o);
+                advance_parse(parse_o);
+                break;
+        
+        case TOKEN_FEED:
+                advance_parse(parse_o);
+                if (parse_o -> current.type == TOKEN_IDENTIFIER) {
+                        //write expression to identifier
+                } else if (parse_o -> current.type == TOKEN_IDENTIFIER) {//register statndin
+                        //write to register
+                }
+
+                advance_parse(parse_o);
+                break;
+
+        }
+
+}
+
+static int parse_expression(parse_t *parse_o) {
+
+        parse_operator(parse_o);
+
+        return 0;
+
+}
+
+static int parse_statement(parse_t *parse_o) {
+
+        parse_expression(parse_o);
+
+        return 0;
+
+}
+
+static int parse_program (parse_t *parse_o) {
+
+        advance_parse(parse_o); // initial call, loading first token.
+
+        while (parse_o -> current.type != TOKEN_EOF) {
+
+                if (parse_o -> current.type == TOKEN_RD_ERR) {
+                        return 1;
+                }
+
+                if (parse_statement(parse_o) != 0) {
+                        return 1;
+                }
+
+        }
+
+        return 0;
+
+}
+
 int parse_start (parse_t *parse_o) {
 
         token_t tok;
@@ -118,6 +216,8 @@ int parse_start (parse_t *parse_o) {
                         break;
                 }
 
+                parse_program(parse_o);
+
                 //if (tok.type == TOKEN_IDENTIFIER) {
                 //        printf("%s: %d\n", tok_to_s(tok.type), tok.value);
                 //} else {
@@ -125,6 +225,8 @@ int parse_start (parse_t *parse_o) {
                 //}
 
         }
+
+        printf("lhs: %d\n", parse_o -> reg_o -> lhs);
 
         return 0;
 

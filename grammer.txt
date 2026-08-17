@@ -22,8 +22,7 @@ program         := statement*
 
 statement       := expression
                  | expression > identifier
-                 | reserved_register < identifier
-                 | identifier < identifier
+                 | reserved_register > identifier
 
 expression      := operand
                  | operand operator operand
@@ -31,7 +30,7 @@ expression      := operand
 operand         := 0
                  | 1
                  | identifer
-                 | NOT operand
+                 | reserved_register(lhs) NOT
 
 operator        := |
                  | &
