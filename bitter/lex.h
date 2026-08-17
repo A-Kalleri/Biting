@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 
+/* Lexer magic numbers */
+#define IDENTIFIER_OVERFLOW 9165119
+
 typedef struct source_buf source_buf_t;
 
 typedef enum {

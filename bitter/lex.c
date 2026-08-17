@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <limits.h>
 
 #include "reader.h"
 #include "lex.h"
@@ -202,6 +203,10 @@ static int lex_identifier (lex_t *lex_o, int *value) {
                         *value = 0;
                 }
 
+                if (*value > INT_MAX / 10 || (*value == INT_MAX / 10 && c - '0' > INT_MAX % 10)) {
+                        return IDENTIFIER_OVERFLOW; // overflow
+                }
+
                 *value = *value * 10 + (c - '0');
 
                 consume(lex_o -> source);
@@ -309,6 +314,10 @@ token_t lex_next (lex_t *lex_o) {
                 int status = lex_identifier(lex_o, &value);
                 if (status == RD_ERR) {
                         return get_tok_rderr();
+                }
+
+                if (status == IDENTIFIER_OVERFLOW) { // overflow
+                        return get_tok_unknown('x');
                 }
 
                 if (value < 0) {
