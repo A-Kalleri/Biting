@@ -3,6 +3,7 @@
 
 #include "reader.h"
 #include "lex.h"
+#include "printer.h"
 
 static const uint8_t IS_SPACE[256] = {
 
@@ -204,7 +205,7 @@ static int lex_identifier (lex_t *lex_o, int *value) {
                 }
 
                 if (*value > INT_MAX / 10 || (*value == INT_MAX / 10 && c - '0' > INT_MAX % 10)) {
-                        return IDENTIFIER_OVERFLOW; // overflow
+                        return LEX_IDENTIFIER_OVERFLOW; // overflow
                 }
 
                 *value = *value * 10 + (c - '0');
@@ -228,6 +229,8 @@ token_t lex_next (lex_t *lex_o) {
                 }
 
                 if (status == RD_ERR) {
+                        write_stderr("LEX ERROR: Read_Error.\n Inside space skipping.\nABORT.\n");
+                        lex_o -> error_code = LEX_READ_ERROR;
                         return get_tok_rderr();
                 }
 
@@ -242,6 +245,8 @@ token_t lex_next (lex_t *lex_o) {
                 }
 
                 if (status == RD_ERR) {
+                        write_stderr("LEX ERROR: Read_Error.\n Inside comment skipping.\nABORT.\n");
+                        lex_o -> error_code = LEX_READ_ERROR;
                         return get_tok_rderr();
                 }
 
@@ -308,7 +313,6 @@ token_t lex_next (lex_t *lex_o) {
                 return tok;
 
         case 'x': {
-
                 int value = -1;
 
                 int status = lex_identifier(lex_o, &value);
@@ -316,11 +320,15 @@ token_t lex_next (lex_t *lex_o) {
                         return get_tok_rderr();
                 }
 
-                if (status == IDENTIFIER_OVERFLOW) { // overflow
+                if (status == LEX_IDENTIFIER_OVERFLOW) { // overflow
+                        write_stderr("LEX ERROR: Identifier_Overflow: '%d'.\nGreater than bucket <INT: (%d)>.\nABORT.\n", value, INT_MAX);
+                        lex_o -> error_code = LEX_IDENTIFIER_OVERFLOW;
                         return get_tok_unknown('x');
                 }
 
                 if (value < 0) {
+                        write_stderr("LEX ERROR: Identifier_Has_No_Name.\nABORT.\n");
+                        lex_o -> error_code = LEX_NO_IDENTIFIER_NAME;
                         return get_tok_unknown('x');
                 }
 
@@ -332,6 +340,8 @@ token_t lex_next (lex_t *lex_o) {
 
         default:
                 tok = get_tok_unknown(lex_o -> source -> buffer[lex_o -> source -> position]);
+                write_stderr("LEX ERROR: Unknown_Token_Detected.\nABORT.\n");
+                lex_o -> error_code = LEX_UNKNOWN_TOKEN;
                 consume(lex_o -> source);
                 return tok;
 

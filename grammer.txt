@@ -37,24 +37,5 @@ operator        := |
                  | ^
 
 
-fix integer overflow 'report lexical error' fix => {
-
-                int c = get_char(lex_o -> source);
-                if (!IS_NUM[c]) {
-                        return 0;
-                }
-
-                if (*value < 0) {
-                        *value = 0;
-                }
-
-                if (*value > INT_MAX / 10 || (*value == INT_MAX / 10 && c - '0' > INT_MAX 10)) {
-                        return <OVERFLOW>;
-                }
-
-                *value = *value * 10 + (c - '0');
-
-                consume(lex_o -> source);
-
-end}
-
+non boolean values entering registers
+fix/ register guards

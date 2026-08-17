@@ -3,6 +3,7 @@
 
 #include "lex.h"
 #include "parse.h"
+#include "printer.h"
 
 #define REG_EMPTY UINT8_MAX
 
@@ -182,16 +183,20 @@ static int parse_statement(parse_t *parse_o) {
 
 static int parse_program (parse_t *parse_o) {
 
-        advance_parse(parse_o); // initial call, loading first token.
+        advance_parse(parse_o);
 
         while (parse_o -> current.type != TOKEN_EOF) {
 
                 if (parse_o -> current.type == TOKEN_RD_ERR) {
-                        return 1;
+                        return parse_o -> lex -> error_code;
+                }
+
+                if (parse_o -> current.type == TOKEN_UNKNOWN) {
+                        return parse_o -> lex -> error_code;
                 }
 
                 if (parse_statement(parse_o) != 0) {
-                        return 1;
+                        return parse_o -> lex -> error_code;
                 }
 
         }
@@ -202,29 +207,7 @@ static int parse_program (parse_t *parse_o) {
 
 int parse_start (parse_t *parse_o) {
 
-        token_t tok;
-
-        for (;;) {
-
-                tok = lex_next(parse_o -> lex);
-
-                if (tok.type == TOKEN_RD_ERR) {
-                        return 1;
-                }
-
-                if (tok.type == TOKEN_EOF) {
-                        break;
-                }
-
-                parse_program(parse_o);
-
-                //if (tok.type == TOKEN_IDENTIFIER) {
-                //        printf("%s: %d\n", tok_to_s(tok.type), tok.value);
-                //} else {
-                //        printf("%s: %c\n", tok_to_s(tok.type), tok.value);
-                //}
-
-        }
+        parse_program(parse_o);
 
         printf("lhs: %d\n", parse_o -> reg_o -> lhs);
 
