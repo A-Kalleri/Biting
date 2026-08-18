@@ -9,7 +9,8 @@
 x<numbers>      :      variable, x indicates variable.
 
 ><variable>     :      store into variable.
-<<variable>     :      print variable.
+<variable>      :      print variable.
+.               :      reset lhs
 
 accumulate into lhs
 
@@ -25,17 +26,16 @@ statement       := expression
                  | reserved_register > identifier
 
 expression      := operand
-                 | operand operator operand
-
-operand         := 0
-                 | 1
-                 | identifer
+                 | operand (operator operand)*
                  | reserved_register(lhs) NOT
 
 operator        := |
                  | &
                  | ^
 
+operand         := 0
+                 | 1
+                 | identifer
 
 non boolean values entering registers
 fix/ register guards

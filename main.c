@@ -6,10 +6,11 @@ int main (void) {
 
         parse_t *parse = parse_constructor();
 
-        parse_start(parse);
+        int status = parse_start(parse);
+        dump_registers(parse);
 
         parse_destructor(&parse);
 
-        return 0;
+        return status;
 
 }

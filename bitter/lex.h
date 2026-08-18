@@ -21,6 +21,7 @@ typedef enum {
         TOKEN_NOT,
         TOKEN_FEED,
         TOKEN_READ,
+        TOKEN_RST_LHS,
         TOKEN_IDENTIFIER,
         TOKEN_EOF,
         TOKEN_RD_ERR,

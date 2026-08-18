@@ -311,6 +311,12 @@ token_t lex_next (lex_t *lex_o) {
                 tok.value = '<';
                 consume(lex_o -> source);
                 return tok;
+        
+        case '.':
+                tok.type = TOKEN_RST_LHS;
+                tok.value = '.';
+                consume(lex_o -> source);
+                return tok;
 
         case 'x': {
                 int value = -1;
