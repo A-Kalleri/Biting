@@ -31,7 +31,7 @@ typedef enum {
 typedef struct {
 
         token_type_t type;
-        int value;
+        uint8_t value;
 
 } token_t;
 

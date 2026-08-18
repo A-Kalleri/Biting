@@ -9,7 +9,7 @@
 x<numbers>      :      variable, x indicates variable.
 
 ><variable>     :      store into variable.
-<variable>      :      print variable.
+<<variable>     :      print variable.
 .               :      reset lhs
 
 accumulate into lhs
@@ -37,5 +37,7 @@ operand         := 0
                  | 1
                  | identifer
 
-non boolean values entering registers
-fix/ register guards
+future:-
+        #<variable>     can store a single ascii chars and only be printed uses the same symbol table as of x variables
+        <0 <variable>   prints if lhs is 0/false
+        <1 <variable>   prints if lhs is 1/true

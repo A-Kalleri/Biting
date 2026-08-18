@@ -29,32 +29,11 @@ static const uint8_t IS_NUM[256] = {
 
 };
 
-static const char *TYPE_TO_STRING[256] = {
-
-       [TOKEN_UNKNOWN]    = "Unknown",
-       [TOKEN_HIGH]       = "One",
-       [TOKEN_LOW]        = "Zero",
-       [TOKEN_OR]         = "OR",
-       [TOKEN_AND]        = "AND",
-       [TOKEN_XOR]        = "XOR",
-       [TOKEN_NOT]        = "NOT",
-       [TOKEN_FEED]       = "Feed",
-       [TOKEN_READ]       = "Read",
-       [TOKEN_IDENTIFIER] = "Identifier",
-       [TOKEN_EOF]        = "End of file",
-       [TOKEN_RD_ERR]     = "Read error",
-
-};
-
-const char *tok_to_s (token_type_t type) {
-        return TYPE_TO_STRING[type];
-}
-
 static inline token_t get_tok_eof (void) {
 
         return (token_t) {
                 .type = TOKEN_EOF,
-                .value = -1,
+                .value = UINT8_MAX,
         };
 
 }
@@ -63,7 +42,7 @@ static inline token_t get_tok_rderr (void) {
 
         return (token_t) {
                 .type = TOKEN_RD_ERR,
-                .value = -1,
+                .value = UINT8_MAX,
         };
 
 }
@@ -180,16 +159,17 @@ static int skip_comment (lex_t *lex_o) {
 
 }
 
-static int lex_identifier (lex_t *lex_o, int *value) {
+static int lex_identifier (lex_t *lex_o, uint8_t *value) {
 
-        *value = -1;
+        int found_digit = 0;
+        *value = 0;
         consume(lex_o -> source); // 'x'
 
         for (;;) {
 
                 int status = buf_status(lex_o -> source);
                 if (status == RD_EOF) {
-                        return 0;
+                        return found_digit ? 0 : LEX_NO_IDENTIFIER_NAME;
                 }
                 if (status == RD_ERR) {
                         return RD_ERR;
@@ -197,22 +177,21 @@ static int lex_identifier (lex_t *lex_o, int *value) {
 
                 int c = get_char(lex_o -> source);
                 if (!IS_NUM[c]) {
-                        return 0;
+                        return found_digit ? 0 : LEX_NO_IDENTIFIER_NAME;
                 }
 
-                if (*value < 0) {
-                        *value = 0;
-                }
-
-                if (*value > INT_MAX / 10 || (*value == INT_MAX / 10 && c - '0' > INT_MAX % 10)) {
+                if (*value > UINT8_MAX / 10 || (*value == UINT8_MAX / 10 && c - '0' > UINT8_MAX % 10)) {
                         return LEX_IDENTIFIER_OVERFLOW; // overflow
                 }
 
                 *value = *value * 10 + (c - '0');
 
+                found_digit = 1;
                 consume(lex_o -> source);
 
         }
+
+        return found_digit ? 0 : LEX_NO_IDENTIFIER_NAME;
 
 }
 
@@ -319,7 +298,7 @@ token_t lex_next (lex_t *lex_o) {
                 return tok;
 
         case 'x': {
-                int value = -1;
+                uint8_t value = 0;
 
                 int status = lex_identifier(lex_o, &value);
                 if (status == RD_ERR) {
@@ -327,12 +306,12 @@ token_t lex_next (lex_t *lex_o) {
                 }
 
                 if (status == LEX_IDENTIFIER_OVERFLOW) { // overflow
-                        write_stderr("LEX ERROR: Identifier_Overflow: '%d'.\nGreater than bucket <INT: (%d)>.\nABORT.\n", value, INT_MAX);
+                        write_stderr("LEX ERROR: Identifier_Overflow: '%d...',\nGreater than bucket <INT(8): (%d)>.\nABORT.\n", value, UINT8_MAX);
                         lex_o -> error_code = LEX_IDENTIFIER_OVERFLOW;
                         return get_tok_unknown('x');
                 }
 
-                if (value < 0) {
+                if (status == LEX_NO_IDENTIFIER_NAME) {
                         write_stderr("LEX ERROR: Identifier_Has_No_Name.\nABORT.\n");
                         lex_o -> error_code = LEX_NO_IDENTIFIER_NAME;
                         return get_tok_unknown('x');

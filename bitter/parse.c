@@ -1,8 +1,10 @@
 #include <stdlib.h>
-#include <stdio.h>
+
+#include <string.h>
 
 #include "lex.h"
 #include "parse.h"
+#include "symbol_array.h"
 #include "printer.h"
 
 #define REG_EMPTY UINT8_MAX
@@ -19,6 +21,7 @@ typedef struct parse {
 
         lex_t *lex;
         registers_t *reg_o;
+        uint8_t *symbol_array;
         token_t current;
         int error_code;
 
@@ -64,6 +67,7 @@ void parse_destructor (parse_t **parse_o) {
 
         lex_destructor(&(*parse_o) -> lex);
         registers_destructor(&(*parse_o) -> reg_o);
+        array_free(&(*parse_o) -> symbol_array);
         free(*parse_o);
 
         *parse_o = NULL;
@@ -74,6 +78,12 @@ parse_t *parse_constructor (void) {
 
         parse_t *_parse_image = calloc(1, sizeof(*_parse_image));
         if (!_parse_image) {
+                return NULL;
+        }
+
+        _parse_image -> symbol_array = array_alloc((size_t)(UINT8_MAX + 1));
+        if (!_parse_image -> symbol_array) {
+                parse_destructor(&_parse_image);
                 return NULL;
         }
 
@@ -92,10 +102,38 @@ parse_t *parse_constructor (void) {
 
 }
 
-void dump_registers (parse_t *parse_o) {
-        write_stderr("\nLHS: %d\n", parse_o -> reg_o -> lhs);
-        write_stderr("RHS: %d\n", parse_o -> reg_o -> rhs);
-        write_stderr("OP: %d\n", parse_o -> reg_o -> op);
+void dump_registers (parse_t *parse_o, const char *opts) {
+
+        for (int i = 0; i < strlen(opts); ++i) {
+
+                if (opts[i] == 'l') {
+                        write_stderr("LHS: %d\n", parse_o -> reg_o -> lhs);
+                        continue;
+                } else if (opts[i] == 'r') {
+                        write_stderr("RHS: %d\n", parse_o -> reg_o -> rhs);
+                        continue;
+                } else if (opts[i] == 'o') {
+                        write_stderr("OP: %d\n", parse_o -> reg_o -> op);
+                        continue;
+                } else {
+                        continue;
+                }
+
+        }
+
+}
+
+void dump_symbol_array (parse_t *parse_o) {
+
+        for (int i = 0; i < UINT8_MAX + 1; ++i) {
+
+                write_stderr("%d: %d,", i, parse_o -> symbol_array[i]);
+                if ((i + 1) % 25 == 0) {
+                        write_stderr("\n");
+                }
+
+        }
+
 }
 
 void advance_parse (parse_t *parse_o) {
@@ -165,11 +203,11 @@ static int parse_operand(parse_t *parse_o) {
 
         switch (parse_o -> current.type) {
                 case TOKEN_HIGH:
-                        printf("ONE ");
+                        write_stderr("ONE ");
                         return 1;
 
                 case TOKEN_LOW:
-                        printf("ZERO ");
+                        write_stderr("ZERO ");
                         return 0;
 
                 case TOKEN_IDENTIFIER: // token holds the value
@@ -201,22 +239,22 @@ static int parse_expression(parse_t *parse_o) {
                 switch (parse_o -> current.type) {
 
                 case TOKEN_OR:
-                        printf("OR ");
+                        write_stderr("OR ");
                         parse_o -> reg_o -> op = '|';
                         break;
 
                 case TOKEN_AND:
-                        printf("AND ");
+                        write_stderr("AND ");
                         parse_o -> reg_o -> op = '&';
                         break;
 
                 case TOKEN_XOR:
-                        printf("XOR ");
+                        write_stderr("XOR ");
                         parse_o -> reg_o -> op = '^';
                         break;
                 
                 case TOKEN_NOT:
-                        printf("NOT ");
+                        write_stderr("NOT ");
                         parse_o -> reg_o -> op = '!';
                         break;
 
@@ -256,8 +294,8 @@ static int parse_statement(parse_t *parse_o) {
         case TOKEN_FEED:
                 advance_parse(parse_o);
                 if (parse_o -> current.type == TOKEN_IDENTIFIER) {
-                        //write expression to identifier
-                } else if (parse_o -> current.type == TOKEN_IDENTIFIER) {//register statndin
+                        parse_o -> symbol_array[parse_o -> current.value] = parse_o -> reg_o -> lhs;
+                        advance_parse(parse_o);
                         //write to register
                 }
                 break; // to statement
