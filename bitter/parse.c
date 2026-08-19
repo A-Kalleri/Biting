@@ -141,6 +141,21 @@ void dump_symbol_array (parse_t *parse_o) {
 
 }
 
+static int fetch_value (parse_t *parse_o) {
+
+        uint8_t value = parse_o -> symbol_array[parse_o -> current.value];
+
+        if (value == EMPTY_CELL) {
+                write_stderr("PARSE ERROR: Value_Error.\nValue at x%d is EMPTY.\nABORT.", parse_o -> current.value);
+                parse_o -> error_code = PAR_FETCH_EMPTY_VAR;
+                return 1;
+        }
+
+        parse_o -> current.value = value;
+        return 0;
+
+}
+
 void advance_parse (parse_t *parse_o) {
         parse_o -> current = lex_next(parse_o -> lex);
 }
@@ -158,7 +173,6 @@ static int evaluate(parse_t *parse_o) {
                 }
 
                 reg_o -> lhs = !reg_o -> lhs;
-                dump_registers(parse_o, "l");
                 reg_o -> op = REG_EMPTY;
                 return 0;
 
@@ -213,6 +227,9 @@ static int parse_operand(parse_t *parse_o) {
                 return 0;
 
         case TOKEN_IDENTIFIER: // token holds the value
+                if (fetch_value(parse_o) != 0) {
+                        return REG_EMPTY;
+                }
                 return parse_o -> current.value;
 
         default:
@@ -313,6 +330,17 @@ static int parse_statement(parse_t *parse_o) {
                         write_stderr("%d", parse_o -> reg_o -> lhs);
                 }
                 break;
+
+        default:
+                write_stderr("PARSE ERROR: Syntax_Error: Unexpected_Operand: ");
+                if (parse_o -> current.type == TOKEN_IDENTIFIER) {
+                        write_stderr("'x%d'", parse_o -> current.value);
+                } else {
+                        write_stderr("'%c'.", parse_o -> current.value);
+                }
+                write_stderr("\nExpected an operator between two operands\nABORT.");
+                parse_o -> error_code = PAR_UNKNOWN_OPERAND;
+                return 1;
 
         }
 
