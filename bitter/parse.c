@@ -14,6 +14,7 @@ typedef struct registers {
         uint8_t lhs;
         uint8_t rhs;
         uint8_t op;
+        uint8_t rp;
 
 } registers_t;
 
@@ -32,6 +33,7 @@ static inline void reset_registers (registers_t *reg_o) {
         reg_o -> lhs = REG_EMPTY;
         reg_o -> rhs = REG_EMPTY;
         reg_o -> op = REG_EMPTY;
+        reg_o -> rp = REG_EMPTY;
 
 }
 
@@ -115,6 +117,9 @@ void dump_registers (parse_t *parse_o, const char *opts) {
                 } else if (opts[i] == 'o') {
                         write_stderr("OP: %d\n", parse_o -> reg_o -> op);
                         continue;
+                } else if (opts[i] == 'p') {
+                        write_stderr("RP: %d\n", parse_o -> reg_o -> rp);
+                        continue;
                 } else {
                         continue;
                 }
@@ -146,14 +151,16 @@ static int evaluate(parse_t *parse_o) {
 
         if (reg_o -> op == '!') {
 
-                if (reg_o -> lhs != REG_EMPTY) {
+                if (reg_o -> lhs == REG_EMPTY) {
                         write_stderr("PARSE ERROR: Syntax_Error.\nExpected LEFT_HAND_SIDE to be not EMPTY.\nABORT.");
                         parse_o -> error_code = PAR_SYNTAX_ERROR;
                         return 1;
                 }
 
                 reg_o -> lhs = !reg_o -> lhs;
+                dump_registers(parse_o, "l");
                 reg_o -> op = REG_EMPTY;
+                return 0;
 
         }
 
@@ -161,11 +168,7 @@ static int evaluate(parse_t *parse_o) {
                 reg_o -> lhs == REG_EMPTY ||
                 reg_o -> rhs == REG_EMPTY
         ) {
-                write_stderr("\
-                        PARSE ERROR: Syntax_Error.\n\
-                        Expected LEFT_HAND_SIDE to be not EMPTY.\n\
-                        Expected RIGHT_HAND_SIDE to be not EMPTY.\n\
-                        ABORT."
+                write_stderr("PARSE ERROR: Syntax_Error.\nExpected LEFT_HAND_SIDE to be not EMPTY.\nExpected RIGHT_HAND_SIDE to be not EMPTY.\nABORT."
                 );
                 parse_o -> error_code = PAR_SYNTAX_ERROR;
                 return 1;
@@ -202,21 +205,20 @@ static int evaluate(parse_t *parse_o) {
 static int parse_operand(parse_t *parse_o) {
 
         switch (parse_o -> current.type) {
-                case TOKEN_HIGH:
-                        write_stderr("ONE ");
-                        return 1;
 
-                case TOKEN_LOW:
-                        write_stderr("ZERO ");
-                        return 0;
+        case TOKEN_HIGH:
+                return 1;
 
-                case TOKEN_IDENTIFIER: // token holds the value
-                        return parse_o -> current.value;
+        case TOKEN_LOW:
+                return 0;
 
-                default:
-                        write_stderr("PARSE ERROR: Unknown_Operand: '%c'.\nABORT.", parse_o -> current.value);
-                        parse_o -> error_code = PAR_UNKNOWN_OPERAND;
-                        return REG_EMPTY;
+        case TOKEN_IDENTIFIER: // token holds the value
+                return parse_o -> current.value;
+
+        default:
+                write_stderr("PARSE ERROR: Unknown_Operand: '%c'.\nABORT.", parse_o -> current.value);
+                parse_o -> error_code = PAR_UNKNOWN_OPERAND;
+                return REG_EMPTY;
 
         }
 
@@ -239,24 +241,24 @@ static int parse_expression(parse_t *parse_o) {
                 switch (parse_o -> current.type) {
 
                 case TOKEN_OR:
-                        write_stderr("OR ");
                         parse_o -> reg_o -> op = '|';
                         break;
 
                 case TOKEN_AND:
-                        write_stderr("AND ");
                         parse_o -> reg_o -> op = '&';
                         break;
 
                 case TOKEN_XOR:
-                        write_stderr("XOR ");
                         parse_o -> reg_o -> op = '^';
                         break;
-                
+
                 case TOKEN_NOT:
-                        write_stderr("NOT ");
+                        advance_parse(parse_o);
                         parse_o -> reg_o -> op = '!';
-                        break;
+                        if (evaluate(parse_o) != 0) {
+                                return 1;
+                        }
+                        return 0;
 
                 default:
                         return 0;
@@ -296,9 +298,21 @@ static int parse_statement(parse_t *parse_o) {
                 if (parse_o -> current.type == TOKEN_IDENTIFIER) {
                         parse_o -> symbol_array[parse_o -> current.value] = parse_o -> reg_o -> lhs;
                         advance_parse(parse_o);
-                        //write to register
+                } else if (parse_o -> current.type == TOKEN_REG_PRNT) {
+                        parse_o -> reg_o -> rp = parse_o -> reg_o -> lhs;
+                        advance_parse(parse_o);
                 }
-                break; // to statement
+                break;
+        
+        case TOKEN_READ:
+                advance_parse(parse_o);
+                if (parse_o -> reg_o -> rp != REG_EMPTY){
+                        write_stderr("%d", parse_o -> reg_o -> rp);
+                }
+                else if (parse_o -> reg_o -> lhs != REG_EMPTY) {
+                        write_stderr("%d", parse_o -> reg_o -> lhs);
+                }
+                break;
 
         }
 

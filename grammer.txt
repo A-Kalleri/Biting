@@ -12,11 +12,13 @@ x<numbers>      :      variable, x indicates variable.
 <<variable>     :      print variable.
 .               :      reset lhs
 
+rp/RP           :       print register
+
 accumulate into lhs
 
 start -> fill_buffer -> lexer -> parser -> end
-              ^                    |
-              |____________________|
+              ^           |
+              |___________|
 
 
 program         := statement*
@@ -24,6 +26,7 @@ program         := statement*
 statement       := expression
                  | expression > identifier
                  | reserved_register > identifier
+                 | <
 
 expression      := operand
                  | operand (operator operand)*
@@ -41,3 +44,14 @@ future:-
         #<variable>     can store a single ascii chars and only be printed uses the same symbol table as of x variables
         <0 <variable>   prints if lhs is 0/false
         <1 <variable>   prints if lhs is 1/true
+
+
+fix:
+1<|1 > x1
+x1<
+infinite loop
+
+fix:
+1&0 > x1
+.x1<
+prints 1

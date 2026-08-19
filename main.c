@@ -8,8 +8,8 @@ int main (void) {
 
         int status = parse_start(parse);
         printf("\n");
-        dump_registers(parse, "l");
-        dump_symbol_array(parse);
+        //dump_registers(parse, "lp");
+        //dump_symbol_array(parse);
 
         parse_destructor(&parse);
 
