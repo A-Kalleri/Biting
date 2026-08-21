@@ -338,7 +338,7 @@ static int parse_statement(parse_t *parse_o) {
                 } else {
                         write_stderr("'%c'.", parse_o -> current.value);
                 }
-                write_stderr("\nExpected an operator between two operands\nABORT.");
+                write_stderr("\nExpected an operator between two operands\nor LHS is not empty.\nABORT.");
                 parse_o -> error_code = PAR_UNKNOWN_OPERAND;
                 return 1;
 
