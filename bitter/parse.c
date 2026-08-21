@@ -324,10 +324,14 @@ static int parse_statement(parse_t *parse_o) {
         case TOKEN_READ:
                 advance_parse(parse_o);
                 if (parse_o -> reg_o -> rp != REG_EMPTY){
-                        write_stderr("%d", parse_o -> reg_o -> rp);
+                        write_stdout_char(parse_o -> reg_o -> rp);
                 }
                 else if (parse_o -> reg_o -> lhs != REG_EMPTY) {
-                        write_stderr("%d", parse_o -> reg_o -> lhs);
+                        write_stdout_char(parse_o -> reg_o -> lhs);
+                } else {
+                        write_stderr("PARSE ERROR: Read_on_Empty_Registers\nRP and LHS are both empty.\nABORT.");
+                        parse_o -> error_code = PAR_OP_ON_EMPTY_REG;
+                        return 1;
                 }
                 break;
 
@@ -338,10 +342,9 @@ static int parse_statement(parse_t *parse_o) {
                 } else {
                         write_stderr("'%c'.", parse_o -> current.value);
                 }
-                write_stderr("\nExpected an operator between two operands\nor LHS is not empty.\nABORT.");
+                write_stderr("\nExpected an operator between two operands.\nor LHS is not empty.\nABORT.");
                 parse_o -> error_code = PAR_UNKNOWN_OPERAND;
                 return 1;
-
         }
 
         return 0;

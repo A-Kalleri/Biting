@@ -4,6 +4,7 @@
 #define PAR_UNKNOWN_OPERAND 9674116 //operanla
 #define PAR_SYNTAX_ERROR    6711629 //ariylato
 #define PAR_FETCH_EMPTY_VAR 7321176 //empteyaa
+#define PAR_OP_ON_EMPTY_REG 2772117 //regempte
 
 typedef struct parse parse_t;
 
