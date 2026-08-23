@@ -1,20 +1,21 @@
-1               :      1
-0               :      0
+Bitter :
+        1               :      1
+        0               :      0
 
-|               :      or
-&               :      and
-^               :      xor
-~/!             :      not
+        |               :      or
+        &               :      and
+        ^               :      xor
+        ~/!             :      not
 
-x<numbers>      :      variable, x indicates variable.
+        x<numbers>      :      variable, x indicates variable.
 
-><variable>     :      store into variable.
-<<variable>     :      print variable.
-.               :      reset lhs
+        ><variable>     :      store into variable.
+        <<variable>     :      print variable.
+        .               :      reset lhs
 
-rp/RP           :       print register
-
-accumulate into lhs
+        rp/RP           :       print register
+        
+        operations accumulate into reg_lhs
 
 start -> fill_buffer -> lexer -> parser -> end
               ^           |
