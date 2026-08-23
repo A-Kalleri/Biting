@@ -18,8 +18,8 @@ source_buf_t *source_buffer_constructor (size_t _size, const char *filename) {
 
     _source_buf_image -> buffer = malloc(_size);
     if (!_source_buf_image -> buffer) {
-        free(_source_buf_image);
         fclose(_source_buf_image -> file_ptr);
+        free(_source_buf_image);
         return NULL;
     }
 

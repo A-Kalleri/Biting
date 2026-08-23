@@ -1,14 +1,17 @@
+;First program in bitting-bitter (21/08/2026)
+;A 4-bit full adder
+
 ; The number 5
-1 > x0.
+1 > x0. ;lsb
 0 > x1.
 1 > x2.
-0 > x3.
+0 > x3. ;msb
 
 ; The number 1
-1 > x4.
+1 > x4. ;lsb
 0 > x5.
 0 > x6.
-0 > x7.
+0 > x7. ;msb
 
 ;------------
 x0 ^ x4 > x8.
@@ -48,10 +51,10 @@ x26 | x24 > x27. ;carry
 
 ;------------
 
-x10<. ;element 1
-x15<. ;element 2
-x20<. ;element 3
-x25<. ;element 4
-
 ;carry
-x27.
+x27<.    ;lsb
+
+x25<.
+x20<.
+x15<.
+x10<.   ;msb

@@ -1,3 +1,6 @@
 .vscode/
 biting.exe
 err.txt
+
+build/
+bin/

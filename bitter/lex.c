@@ -3,7 +3,11 @@
 
 #include "reader.h"
 #include "lex.h"
-#include "printer.h"
+#include "helper.h"
+
+#define RD_ERR 1011
+#define RD_EOF 1012
+#define RD_OKK 1013
 
 static const uint8_t IS_SPACE[256] = {
 
@@ -29,7 +33,7 @@ static const uint8_t IS_NUM[256] = {
 
 };
 
-static inline token_t get_tok_eof (void) {
+static inline token_t getTokEof (void) {
 
         return (token_t) {
                 .type = TOKEN_EOF,
@@ -38,7 +42,7 @@ static inline token_t get_tok_eof (void) {
 
 }
 
-static inline token_t get_tok_rderr (void) {
+static inline token_t getTokRderr (void) {
 
         return (token_t) {
                 .type = TOKEN_RD_ERR,
@@ -47,7 +51,7 @@ static inline token_t get_tok_rderr (void) {
 
 }
 
-static inline token_t get_tok_unknown (int value) {
+static inline token_t getTokUnknown (int value) {
 
         token_t tok = {
                 .type = TOKEN_UNKNOWN,
@@ -57,14 +61,14 @@ static inline token_t get_tok_unknown (int value) {
 
 }
 
-lex_t *lex_constructor () {
+lex_t *lex_constructor (const char *filename) {
 
         lex_t *_lex_image = calloc(1, sizeof(*_lex_image));
         if (!_lex_image) {
                 return NULL;
         }
 
-        _lex_image -> source = source_buffer_constructor(3, "test");
+        _lex_image -> source = source_buffer_constructor(256, filename);
         if (!_lex_image -> source) {
                 free(_lex_image);
                 return NULL;
@@ -86,7 +90,7 @@ void lex_destructor (lex_t **lex_o) {
 
 }
 
-static int get_char (source_buf_t *sbuf) {
+static int getChar (source_buf_t *sbuf) {
 
         /* Requires buf_status() == RD_OKK.
          * Otherwise, buffer[position] may be out of bounds.
@@ -96,11 +100,7 @@ static int get_char (source_buf_t *sbuf) {
 
 }
 
-#define RD_ERR 1011
-#define RD_EOF 1012
-#define RD_OKK 1013
-
-static int buf_status (source_buf_t *sbuf) {
+static int bufStatus (source_buf_t *sbuf) {
 
         if (sbuf -> position < sbuf -> length) {
                 return RD_OKK;
@@ -118,16 +118,16 @@ static int buf_status (source_buf_t *sbuf) {
 
 }
 
-static int skip_spaces (lex_t *lex_o) {
+static int skipSpaces (lex_t *lex_o) {
 
         for (;;) {
 
-                int status = buf_status(lex_o -> source);
+                int status = bufStatus(lex_o -> source);
                 if (status != RD_OKK) {
                         return status;
                 }
 
-                if (!IS_SPACE[get_char(lex_o -> source)]) {
+                if (!IS_SPACE[getChar(lex_o -> source)]) {
                         return 0;
                 }
 
@@ -137,18 +137,18 @@ static int skip_spaces (lex_t *lex_o) {
 
 }
 
-static int skip_comment (lex_t *lex_o) {
+static int skipComment (lex_t *lex_o) {
 
         consume(lex_o -> source); // ';'
 
         for (;;) {
 
-                int status = buf_status(lex_o -> source);
+                int status = bufStatus(lex_o -> source);
                 if (status != RD_OKK) {
                         return status;
                 }
 
-                if (get_char(lex_o -> source) == '\n') {
+                if (getChar(lex_o -> source) == '\n') {
                         consume(lex_o -> source);
                         return 0;
                 }
@@ -159,7 +159,7 @@ static int skip_comment (lex_t *lex_o) {
 
 }
 
-static int lex_identifier (lex_t *lex_o, uint8_t *value) {
+static int lexIdentifier (lex_t *lex_o, uint8_t *value) {
 
         int found_digit = 0;
         *value = 0;
@@ -167,7 +167,7 @@ static int lex_identifier (lex_t *lex_o, uint8_t *value) {
 
         for (;;) {
 
-                int status = buf_status(lex_o -> source);
+                int status = bufStatus(lex_o -> source);
                 if (status == RD_EOF) {
                         return found_digit ? 0 : LEX_NO_IDENTIFIER_NAME;
                 }
@@ -175,7 +175,7 @@ static int lex_identifier (lex_t *lex_o, uint8_t *value) {
                         return RD_ERR;
                 }
 
-                int c = get_char(lex_o -> source);
+                int c = getChar(lex_o -> source);
                 if (!IS_NUM[c]) {
                         return found_digit ? 0 : LEX_NO_IDENTIFIER_NAME;
                 }
@@ -201,32 +201,32 @@ token_t lex_next (lex_t *lex_o) {
 
         for (;;) {
 
-                int status = skip_spaces(lex_o);
+                int status = skipSpaces(lex_o);
 
                 if (status == RD_EOF) {
-                        return get_tok_eof();
+                        return getTokEof();
                 }
 
                 if (status == RD_ERR) {
                         write_stderr("LEX ERROR: Read_Error.\n Inside space skipping.\nABORT.\n");
                         lex_o -> error_code = LEX_READ_ERROR;
-                        return get_tok_rderr();
+                        return getTokRderr();
                 }
 
-                if (get_char(lex_o -> source) != ';') {
+                if (getChar(lex_o -> source) != ';') {
                         break;
                 }
 
-                status = skip_comment(lex_o);
+                status = skipComment(lex_o);
 
                 if (status == RD_EOF) {
-                        return get_tok_eof();
+                        return getTokEof();
                 }
 
                 if (status == RD_ERR) {
                         write_stderr("LEX ERROR: Read_Error.\n Inside comment skipping.\nABORT.\n");
                         lex_o -> error_code = LEX_READ_ERROR;
-                        return get_tok_rderr();
+                        return getTokRderr();
                 }
 
         }
@@ -235,7 +235,7 @@ token_t lex_next (lex_t *lex_o) {
          * skip_spaces() maintains a valid buffer position.
          */
 
-        switch (get_char(lex_o -> source)) {
+        switch (getChar(lex_o -> source)) {
 
         case '1':
                 tok.type = TOKEN_HIGH;
@@ -301,35 +301,35 @@ token_t lex_next (lex_t *lex_o) {
         case 'R':
                 consume(lex_o -> source);
                 if (
-                        get_char(lex_o -> source) == 'p' ||
-                        get_char(lex_o -> source) == 'P'
+                        getChar(lex_o -> source) == 'p' ||
+                        getChar(lex_o -> source) == 'P'
                 ) {
                         tok.type = TOKEN_REG_PRNT;
                         tok.value = 'p';
                         consume(lex_o -> source);
                         return tok;
                 }
-                write_stderr("LEX ERROR: Unknown_Register_Named.\nWith value: '%c'.\nABORT.\n", get_char(lex_o -> source));
-                return get_tok_unknown('r');
+                write_stderr("LEX ERROR: Unknown_Register_Named.\nWith value: '%c'.\nABORT.\n", getChar(lex_o -> source));
+                return getTokUnknown('r');
 
         case 'x': {
                 uint8_t value = 0;
 
-                int status = lex_identifier(lex_o, &value);
+                int status = lexIdentifier(lex_o, &value);
                 if (status == RD_ERR) {
-                        return get_tok_rderr();
+                        return getTokRderr();
                 }
 
                 if (status == LEX_IDENTIFIER_OVERFLOW) { // overflow
                         write_stderr("LEX ERROR: Identifier_Overflow: '%d...',\nGreater than bucket <INT(8): (%d)>.\nABORT.\n", value, UINT8_MAX);
                         lex_o -> error_code = LEX_IDENTIFIER_OVERFLOW;
-                        return get_tok_unknown('x');
+                        return getTokUnknown('x');
                 }
 
                 if (status == LEX_NO_IDENTIFIER_NAME) {
                         write_stderr("LEX ERROR: Identifier_Has_No_Name.\nABORT.\n");
                         lex_o -> error_code = LEX_NO_IDENTIFIER_NAME;
-                        return get_tok_unknown('x');
+                        return getTokUnknown('x');
                 }
 
                 tok.type = TOKEN_IDENTIFIER;
@@ -339,7 +339,7 @@ token_t lex_next (lex_t *lex_o) {
         }
 
         default:
-                tok = get_tok_unknown(lex_o -> source -> buffer[lex_o -> source -> position]);
+                tok = getTokUnknown(lex_o -> source -> buffer[lex_o -> source -> position]);
                 write_stderr("LEX ERROR: Unknown_Token_Detected.\nABORT.\n");
                 lex_o -> error_code = LEX_UNKNOWN_TOKEN;
                 consume(lex_o -> source);
