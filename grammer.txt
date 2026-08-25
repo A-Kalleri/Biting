@@ -1,4 +1,4 @@
-Bitter :
+bitting-bitter :
         1               :      1
         0               :      0
 
@@ -21,27 +21,78 @@ start -> fill_buffer -> lexer -> parser -> end
               ^           |
               |___________|
 
+- case insensitive
 
-program         := statement*
+program         ->      statement
 
-statement       := expression
-                 | expression > identifier
-                 | reserved_register > identifier
-                 | <
+statement       ->      expression,
+                        expression feed identifier,
+                        expression feed register,
+                        register feed identifier,
+                        identifier feed register,
+                        read
+                        reset
+                        not
 
-expression      := operand
-                 | operand (operator operand)*
-                 | reserved_register(lhs) NOT
+expression      ->      operand operator operand
+                        operand (operator operand...)
 
-operator        := |
-                 | &
-                 | ^
+register        ->      RP
 
-operand         := 0
-                 | 1
-                 | identifer
+reset           ->      .
 
-future:-
-        #<variable>     can store a single ascii chars and only be printed uses the same symbol table as of x variables
-        <0 <variable>   prints if lhs is 0/false
-        <1 <variable>   prints if lhs is 1/true
+feed            ->      >
+
+read            ->      <
+
+not             ->      ~,
+                        !
+
+operator        ->      |,
+                        &,
+                        ^
+
+operand         ->      0,
+                        1,
+                        identifer
+
+identifier      ->      xdigit
+
+digit           ->      1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
+                        - combinations till '255'
+
+bitting-sweet
+- named operations
+        xor, and, or, not, feed, read
+- #<variable>
+        can store a single ascii chars and only be printed uses the same symbol table as of x variables
+
+- <0 <variable>
+        prints if lhs is 0/false
+
+- <1 <variable>
+        prints if lhs is 1/true
+
+- loops
+        x0 > LR (loop register)
+        ( variable ) { block }
+
+- functions
+        f( args* ) { block }
+
+- bit array variables
+        x  - bit                1   bit
+        xn - nibble             4   bits
+        xb - byte               8   bits
+        xw - word               16  bits
+        xd - double word        32  bits
+        xq - quad word          64  bits
+        xp - paragraph          128 bits
+        
+        use uint8_t for byte and uint16 for word and so on arrays
+        once a part of bit-array it can only be indexed also a seperate function to seperate individual bits
+
+bitting-sour
+- parallel execution
+- macros
+- compiled! wakeup time to dust up assembly!
