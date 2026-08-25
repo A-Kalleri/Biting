@@ -28,13 +28,12 @@ program         ->      statement
 statement       ->      expression,
                         expression feed identifier,
                         expression feed register,
-                        register feed identifier,
-                        identifier feed register,
                         read
                         reset
                         not
 
-expression      ->      operand operator operand
+expression      ->      operand,
+                        operand operator operand,
                         operand (operator operand...)
 
 register        ->      RP

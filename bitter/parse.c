@@ -125,20 +125,6 @@ static int evaluate(parse_t *parse_o) {
 
         registers_t *reg_o = parse_o -> reg_o;
 
-        if (reg_o -> op == '!') {
-
-                if (reg_o -> lhs == REG_EMPTY) {
-                        write_stderr("PARSE ERROR: Syntax_Error.\nExpected LEFT_HAND_SIDE to be not EMPTY.\nABORT.");
-                        parse_o -> error_code = PAR_SYNTAX_ERROR;
-                        return 1;
-                }
-
-                reg_o -> lhs = !reg_o -> lhs;
-                reg_o -> op = REG_EMPTY;
-                return 0;
-
-        }
-
         if (
                 reg_o -> lhs == REG_EMPTY ||
                 reg_o -> rhs == REG_EMPTY
@@ -230,14 +216,6 @@ static int parseExpression(parse_t *parse_o) {
                         parse_o -> reg_o -> op = '^';
                         break;
 
-                case TOKEN_NOT:
-                        advanceParse(parse_o);
-                        parse_o -> reg_o -> op = '!';
-                        if (evaluate(parse_o) != 0) {
-                                return 1;
-                        }
-                        return 0;
-
                 default:
                         return 0;
 
@@ -260,16 +238,51 @@ static int parseExpression(parse_t *parse_o) {
 
 static int parseStatement(parse_t *parse_o) {
 
+        switch (parse_o -> current.type) {
+
+        case TOKEN_NOT:
+                advanceParse(parse_o);
+                if (parse_o -> reg_o -> lhs == REG_EMPTY) {
+
+                        write_stderr("PARSE ERROR: Syntax_Error.\nExpected LEFT_HAND_SIDE to be not EMPTY.\nABORT.");
+                        parse_o -> error_code = PAR_SYNTAX_ERROR;
+                        return 1;
+
+                }
+                parse_o -> reg_o -> lhs = !parse_o -> reg_o -> lhs;
+                return 0;
+
+        case TOKEN_RST_LHS:
+                advanceParse(parse_o);
+                parse_o -> reg_o -> lhs = REG_EMPTY;
+                return 0;
+
+        case TOKEN_READ:
+                advanceParse(parse_o);
+                if (parse_o -> reg_o -> rp != REG_EMPTY){
+                        write_stdout_char(parse_o -> reg_o -> rp);
+                }
+                else if (parse_o -> reg_o -> lhs != REG_EMPTY) {
+                        write_stdout_char(parse_o -> reg_o -> lhs);
+                } else {
+
+                        write_stderr("PARSE ERROR: Read_on_Empty_Registers\nRP and LHS are both empty.\nABORT.");
+                        parse_o -> error_code = PAR_OP_ON_EMPTY_REG;
+                        return 1;
+
+                }
+                return 0;
+
+        default:
+                break;
+
+        }
+
         if (parseExpression(parse_o) != 0) {
                 return 1;
         }
 
         switch (parse_o -> current.type) {
-
-        case TOKEN_RST_LHS:
-                advanceParse(parse_o);
-                parse_o -> reg_o -> lhs = REG_EMPTY;
-                break;
 
         case TOKEN_FEED:
                 advanceParse(parse_o);
@@ -279,33 +292,31 @@ static int parseStatement(parse_t *parse_o) {
                 } else if (parse_o -> current.type == TOKEN_REG_PRNT) {
                         parse_o -> reg_o -> rp = parse_o -> reg_o -> lhs;
                         advanceParse(parse_o);
-                }
-                break;
-        
-        case TOKEN_READ:
-                advanceParse(parse_o);
-                if (parse_o -> reg_o -> rp != REG_EMPTY){
-                        write_stdout_char(parse_o -> reg_o -> rp);
-                }
-                else if (parse_o -> reg_o -> lhs != REG_EMPTY) {
-                        write_stdout_char(parse_o -> reg_o -> lhs);
                 } else {
-                        write_stderr("PARSE ERROR: Read_on_Empty_Registers\nRP and LHS are both empty.\nABORT.");
-                        parse_o -> error_code = PAR_OP_ON_EMPTY_REG;
+                        write_stderr("PARSE ERROR: Syntax_Error:\nExpected an identifier of register.\nABORT.");
+                        parse_o -> error_code = PAR_SYNTAX_ERROR;
                         return 1;
                 }
-                break;
 
-        default:
+                return 0;
+
+        case TOKEN_HIGH:
+        case TOKEN_LOW:
+        case TOKEN_IDENTIFIER:
+        case TOKEN_REG_PRNT:
                 write_stderr("PARSE ERROR: Syntax_Error: Unexpected_Operand: ");
                 if (parse_o -> current.type == TOKEN_IDENTIFIER) {
-                        write_stderr("'x%d'", parse_o -> current.value);
+                        write_stderr("'x%d'.", parse_o -> current.value);
                 } else {
                         write_stderr("'%c'.", parse_o -> current.value);
                 }
-                write_stderr("\nExpected an operator between two operands.\nor LHS is not empty.\nABORT.");
-                parse_o -> error_code = PAR_UNKNOWN_OPERAND;
+                write_stderr("\nExpected an operator after an operand.\nABORT.");
+                parse_o -> error_code = PAR_SYNTAX_ERROR;
                 return 1;
+
+        default:
+                break;
+
         }
 
         return 0;
