@@ -91,6 +91,8 @@ bitting-sweet
         use uint8_t for byte and uint16 for word and so on arrays
         once a part of bit-array it can only be indexed also a seperate function to seperate individual bits
 
+- post processing import expansion
+
 bitting-sour
 - parallel execution
 - macros
