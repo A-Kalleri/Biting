@@ -1,0 +1,178 @@
+From Wikipedia, the free encyclopedia
+"C programming language" redirects here. For the book, see The C Programming Language.
+"C lang" redirects here. For the compiler front end, see Clang.
+Not to be confused with C++ or C#.
+C
+
+Logotype used on the cover of the first edition of The C Programming Language[1]
+Paradigm	Multi-paradigm: imperative (procedural), structured
+Designed by	Dennis Ritchie
+Developer	ANSI X3J11 (ANSI C); ISO/IEC JTC 1 (Joint Technical Committee 1) / SC 22 (Subcommittee 22) / WG 14 (Working Group 14) (ISO C)
+First appeared	1972; 54 years ago[a]
+Stable release	
+C23 / October 31, 2024; 21 months ago
+Preview release	
+C2Y (N3886) / May 24, 2026; 3 months ago[5]
+Typing discipline	Static, weak, manifest, nominal
+OS	Cross-platform
+Filename extensions	.c, .h
+Website	
+c-language.org
+iso.org
+open-std.org
+Major implementations
+pcc, GCC, Clang, Intel C, C++Builder, Microsoft Visual C++, Watcom C
+Dialects
+Cyclone, Unified Parallel C, Split-C, Cilk, C*
+Influenced by
+B, BCPL, CPL, ALGOL 68,[b] PL/I, Fortran
+Influenced
+Numerous: AMPL, AWK, csh, C++, C--, C#, Objective-C, D, Go, Java, JavaScript, JS++, Julia, Limbo, LPC, Perl, PHP, Pike, Processing, Python, Rust, V (Vlang), Vala, Verilog (HDL),[8] Nim, Zig
+Wikibooks logo C Programming at Wikibooks
+This article is part of a series on the
+C programming language
+The logo of C programming language
+C libraries and tools
+C IDEs
+C compilers
+C mathematical libraries
+See also
+icon Computer programming portal
+C programming (Wikibooks)
+vte
+C[c] is a general-purpose programming language created in 1972 by Dennis Ritchie. By design, C gives programmers relatively direct access to the features of typical CPU architectures, customized for the target instruction set. It has been and continues to be used to implement operating systems (especially kernels[10]), device drivers, and protocol stacks, though its use in application software is decreasing.[11] C is used on computers ranging from supercomputers to microcontrollers and embedded systems.
+
+C was initially developed as a successor to the B programming language at Bell Labs by Ritchie between 1972 and 1973. Its initial purpose was to construct utilities running on Unix, and was later applied to re-implementing the kernel of the Unix operating system.[12] During the 1980s, C gradually gained popularity, leading to it becoming one of the most widely used programming languages,[13][14] with C compilers available for practically all modern computer architectures and operating systems. The book The C Programming Language, co-authored by the original language designer, served for many years as the de facto standard for the language.[15][1] C has been standardized since 1989 by the American National Standards Institute (ANSI) and, subsequently, jointly by the International Organization for Standardization (ISO) and the International Electrotechnical Commission (IEC).
+
+C is an imperative procedural language, supporting structured programming, lexical variable scope, and recursion, with a static type system. It was designed to be compiled to provide low-level access to memory and language constructs that map efficiently to machine instructions, all with minimal runtime support. Despite its low-level capabilities, the language was designed to encourage cross-platform programming. A standards-compliant C program written with portability in mind can be compiled for a wide variety of computer platforms and operating systems with few changes to its source code.
+
+Although neither C nor its standard library provide some popular features found in other languages, it is flexible enough to support them. For example, object orientation and garbage collection are provided by external libraries GLib Object System and Boehm garbage collector, respectively.
+
+Since 2000, C has typically ranked as the most or second-most popular language in the TIOBE index.[16]
+
+Characteristics
+
+Dennis Ritchie (right), the inventor of the C programming language, with Ken Thompson
+C is an imperative, procedural language with a free-form source layout. Statements are terminated by semicolons and grouped into blocks using curly braces. All executable code is contained in functions rather than top-level statements. The language has a relatively small number of keywords, and user-defined identifiers are not distinguished from keywords by any sigil.
+
+Parameters are passed by value; pass-by-reference is achieved with pointers. A function's return value may be ignored, and while a function cannot normally be nested inside another function, some translators support this. C supports recursion, and run-time polymorphism may be achieved using function pointers. Control flow is provided through constructs such as if, for, do, while, and switch. The language offers arithmetic; bitwise; and logical operators including +, +=, ++, &, ||, and multiple assignments may be performed in a single statement. A variable declared inside a block is accessible only within that block and only below its declaration.
+
+Data typing is weakly enforced and static, with implicit conversion between primitive types. User-defined types allow aliasing of type specifiers. Arrays are defined and accessed with square-bracket notation, for example month[11]. User-defined structure types let related data elements be passed and copied as a unit, though two structures cannot be compared without custom code to compare each field. Unions support overlapping members, allowing multiple data types to share the same memory location, and enumeration types support aliasing integer values. C lacks a dedicated string type but provides syntax for null-terminated strings, with associated handling in its standard library.
+
+The language supports low-level access to computer memory via pointers, procedure-like constructs in the form of functions returning void, and dynamic memory allocation through standard library functions. It includes the C preprocessor for macro definition, source-file inclusion, and conditional compilation. Modularity is supported by processing files separately, with visibility controlled through the static and extern attributes. Functionality is minimized in the core language, with relatively complex features such as I/O, string manipulation, and mathematical functions being provided through standard libraries. The resulting compiled code has relatively straightforward requirements of the underlying platform, making C desirable for operating and embedded systems.
+
+"Hello, world" example
+
+"Hello, World" program by Brian Kernighan (1978)
+The "Hello, World!" program example that appeared in the first edition of K&R has become the model for an introductory program in most programming textbooks. The program prints "hello, world" to the standard output.
+
+The original version was:[17]
+
+main()
+{
+    printf("hello, world\n");
+}
+A more modern version is:[d]
+
+#include <stdio.h>
+
+int main(void)
+{
+    printf("hello, world\n");
+}
+The first line is a preprocessor directive, indicated by #include, which causes the preprocessor to replace that line of code with the text of the stdio.h header file, which contains declarations for input and output functions including printf. The angle brackets around stdio.h indicate that the header file can be located using a search strategy that selects header files provided with the compiler over files with the same name that may be found in project-specific directories.
+
+The next code line declares the entry point function main. The run-time environment calls this function to begin program execution. The type specifier int indicates that the function returns an integer value. The void parameter list indicates that the function consumes no arguments. The run-time environment actually passes two arguments (typed int and char *[]), but this implementation ignores them. The ISO C standard (section 5.1.2.2.1) requires syntax that either is void or these two arguments – a special treatment not afforded to other functions.
+
+The opening curly brace indicates the beginning of the code that defines the function.
+
+The next line of code calls (diverts execution to) the C standard library function printf with the address of the first character of a null-terminated string specified as a string literal. The text \n is an escape sequence that denotes the newline character which when output in a terminal results in moving the cursor to the beginning of the next line. Even though printf returns an int value, it is silently discarded. The semicolon ; terminates the call statement.
+
+The closing curly brace indicates the end of the main function. Prior to C99, an explicit return 0; statement was required at the end of main function, but since C99, the main function (as being the initial function call) implicitly returns 0 upon reaching its final closing curly brace.[e]
+
+History
+Early developments
+Timeline of C language
+Year	Informal
+name	Official
+standard
+1972	first release	—N/a
+1978	K&R C	—N/a
+1989,
+1990	ANSI C, C89,
+ISO C, C90	ANSI X3.159-1989
+ISO/IEC 9899:1990
+1999	C99, C9X	ISO/IEC 9899:1999
+2011	C11, C1X	ISO/IEC 9899:2011
+2018	C17, C18	ISO/IEC 9899:2018
+2024	C23, C2X	ISO/IEC 9899:2024
+TBA	C29, C2Y	—N/a
+The origin of C is closely tied to the development of the Unix operating system, originally implemented in assembly language on a PDP-7 by Dennis Ritchie and Ken Thompson, incorporating several ideas from colleagues. Eventually, they decided to port the operating system to a PDP-11. The original PDP-11 version of Unix was also developed in assembly language.[12]
+
+B
+Main article: B (programming language)
+Thompson wanted a programming language for developing utilities for the new platform. He first tried writing a Fortran compiler, but he soon gave up the idea and instead created a cut-down version of the recently developed systems programming language called BCPL. The official description of BCPL was not available at the time,[19] and Thompson modified the syntax to be less 'wordy' and similar to a simplified ALGOL known as SMALGOL.[20] He called the result B,[12] describing it as "BCPL semantics with a lot of SMALGOL syntax".[20] Like BCPL, B had a bootstrapping compiler to facilitate porting to new machines.[20] Ultimately, few utilities were written in B because it was too slow and could not take advantage of PDP-11 features such as byte addressability.
+
+Unlike BCPL's // comment marking comments up to the end of the line, B adopted /* comment */ as the comment delimiter, more akin to PL/1, and allowing comments to appear in the middle of lines. (BCPL's comment style would be reintroduced in C++.)[12]
+
+New B and first C release
+In 1971, Ritchie started to improve B, to use the features of the more-powerful PDP-11. A significant addition was a character data type. He called this New B (NB).[20] Thompson started to use NB to write the Unix kernel, and his requirements shaped the direction of the language development.[20][21]
+
+Through to 1972, richer types were added to the NB language. NB had arrays of int and char, and to these types were added pointers, the ability to generate pointers to other types, arrays of all types, and types to be returned from functions. Arrays within expressions were effectively treated as pointers. A new compiler was written, and the language was renamed C.[12]
+
+The C compiler and some utilities made with it were included in Version 2 Unix, which is also known as Research Unix.[22]
+
+Structures and Unix kernel re-write
+At Version 4 Unix, released in November 1973, the Unix kernel was extensively re-implemented in C.[12] By this time, the C language had acquired some powerful features such as struct types.
+
+The preprocessor was introduced around 1973 at the urging of Alan Snyder and also in recognition of the usefulness of the file-inclusion mechanisms available in BCPL and PL/I. Its original version provided only included files and simple string replacements: #include and #define of parameterless macros. Soon after that, it was extended, mostly by Mike Lesk and then by John Reiser, to incorporate macros with arguments and conditional compilation.[12]
+
+Unix was one of the first operating system kernels implemented in a language other than assembly. Earlier instances include the Multics system (which was written in PL/I) and Master Control Program (MCP) for the Burroughs B5000 (which was written in ALGOL) in 1961. In and around 1977, Ritchie and Stephen C. Johnson made further changes to the language to facilitate portability of the Unix operating system. Johnson's Portable C Compiler served as the basis for several implementations of C on new platforms.[21]
+
+K&R C
+
+The cover of the book The C Programming Language, first edition, by Brian Kernighan and Dennis Ritchie
+In 1978, Brian Kernighan and Dennis Ritchie published the first edition of The C Programming Language.[23] Known as K&R from the initials of its authors, the book served for many years as an informal specification of the language. The version of C that it describes is commonly referred to as "K&R C". As this was released in 1978, it is now also referred to as C78.[24] The second edition of the book[25] covers the later ANSI C standard, described below.
+
+K&R introduced several language features:
+
+Standard I/O library
+long int data type
+unsigned int data type
+Compound assignment operators of the form =op (such as =-) were changed to the form op= (that is, -=) to remove the semantic ambiguity created by constructs such as i=-10, which had been interpreted as i =- 10 (decrement i by 10) instead of the possibly intended i = -10 (let i be −10).
+Even after the publication of the 1989 ANSI standard, for many years K&R C was still considered the "lowest common denominator" to which C programmers restricted themselves when maximum portability was desired, since many older compilers were still in use, and because carefully written K&R C code can be legal Standard C as well.
+
+Although later versions of C require functions to have an explicit type declaration, K&R C only requires functions that return a type other than int to be declared before use. Functions used without prior declaration were presumed to return int.
+
+For example:
+
+long long_function();
+
+calling_function()
+{
+    long longvar;
+    register intvar;
+    longvar = long_function();
+    if (longvar > 1)
+          intvar = 0;
+    else
+          intvar = int_function();
+    return intvar;
+}
+The declaration of long_function() (on line 1) is required since it returns long; not int. Function int_function can be called (line 11) even though it is not declared since it returns int. Also, variable intvar does not need to be declared as type int since that is the default type for register keyword.
+
+Since function declarations did not include information about arguments, type checks were not performed, although some compilers would issue a warning if different calls to a function used different numbers or types of arguments. Tools such as Unix's lint utility were developed that (among other things) checked for consistency of function use across multiple source files.
+
+In the years following the publication of K&R C, several features were added to the language, supported by compilers from AT&T (in particular PCC[26]) and other vendors. These included:
+
+void functions; functions returning no value
+Functions returning struct or union types
+Assignment for struct variables
+Enumerated types
+The popularity of the language, lack of agreement on standard library interfaces, and lack of compliance to the K&R specification, led to standardization efforts.[27]
+
+ANSI C and ISO C
+Main article: ANSI C
+During the late 1970s and 1980s, versions of C were implemented for a wide variety of mainframe computers, minicomputers, and microcomputers, including the IBM PC, as its popularity increased significantly.
+
+In 1983 the American National Standards Institute (ANSI) formed a committee, X3J11, to establish a standard specification of C. X3J11 based the C standard on the Unix implementation; however, the non-portable portion of the Unix C library was handed off to the IEEE working group 1003 to become the basis for the 1988 POSIX standard. In 1989, the C standard was ratified as ANSI X3.159-1989 "Programming Language C". This version of the language is often referred to as ANSI C, Standard C, or sometimes C89.
