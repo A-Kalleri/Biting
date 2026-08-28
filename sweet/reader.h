@@ -1,10 +1,11 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef struct file file_t;
 
-typedef struct {
+typedef struct source_buf {
 
         file_t *source_file;
         uint8_t *buffer;
