@@ -69,14 +69,14 @@ bitting-sweet
 - <<
         prints lhs directly if not empty
 
-- <0< <variable>
+- <0 <variable>
         prints if lhs is 0/false
 
-- <1< <variable>
+- <1 <variable>
         prints if lhs is 1/true
 
-- <<datatype><
-        print till the size of mentioned datatype; '<xn<' prints nibble size from lhs or rp
+- <<datatype>
+        print till the size of mentioned datatype; '<xn' prints nibble size from lhs or rp
 
 - loops
         x0 > *l (loop register)

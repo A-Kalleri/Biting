@@ -34,6 +34,17 @@ static const uint8_t IS_NUM[256] = {
 
 };
 
+static const uint8_t GET_DATATYPE [256] = {
+
+        ['n'] = TOKEN_NIBBLE,
+        ['b'] = TOKEN_BYTE,
+        ['w'] = TOKEN_WORD,
+        ['d'] = TOKEN_DWORD,
+        ['q'] = TOKEN_QWORD,
+        ['p'] = TOKEN_PARAGRAPH,
+
+};
+
 lexout_t *lexout_constructor (void) {
 
         lexout_t *_lexout_image = calloc(1, sizeof(*_lexout_image));
@@ -196,6 +207,123 @@ static int lexRegister (lexout_t *lexout_o) {
 
 }
 
+static token_type_t getDataType (lexout_t *lexout_o) {
+
+        uint8_t c = (uint8_t)peek(lexout_o -> source);
+        token_type_t type = GET_DATATYPE[c];
+
+        if (type == TOKEN_UNKNOWN) {
+                return TOKEN_BIT;
+        }
+
+        return type;
+
+}
+
+static int lexRead (lexout_t *lexout_o) {
+
+        consume(lexout_o -> source); // '<'
+        lexout_o -> current.value = '<';
+
+        int status = bufferStatus(lexout_o -> source);
+
+        if (status == BUF_RD_EOF) {
+                lexout_o -> current.type = TOKEN_READ;
+                return 0;
+        }
+
+        if (status != BUF_RD_OKK) {
+                return status;
+        }
+
+
+        switch (peek(lexout_o -> source)) {
+
+        case '<':
+                lexout_o -> current.type = TOKEN_READ_LHS;
+                consume(lexout_o -> source);
+                return 0;
+
+        case '1':
+                lexout_o -> current.type = TOKEN_READ_HIGH;
+                consume(lexout_o -> source);
+                return 0;
+
+        case '0':
+                lexout_o -> current.type = TOKEN_READ_LOW;
+                consume(lexout_o -> source);
+                return 0;
+
+        case '#':
+                lexout_o -> current.type = TOKEN_READ_ASCII;
+                consume(lexout_o -> source);
+                return 0;
+
+        case 'x':
+                consume(lexout_o -> source);
+                break;
+
+        default:
+                lexout_o -> current.type = TOKEN_READ;
+                return 0;
+
+        }
+
+        status = bufferStatus(lexout_o -> source);
+
+        if (status == BUF_RD_EOF) {
+                lexout_o -> current.type = TOKEN_READ_BIT;
+                return 0;
+        }
+
+        if (status != BUF_RD_OKK) {
+                return status;
+        }
+
+        switch (getDataType(lexout_o)) {
+
+        case TOKEN_BIT:
+                lexout_o -> current.type = TOKEN_READ_BIT;
+                consume(lexout_o -> source);
+                return 0;
+
+        case TOKEN_NIBBLE:
+                lexout_o -> current.type = TOKEN_READ_NIBBLE;
+                consume(lexout_o -> source);
+                return 0;
+
+        case TOKEN_BYTE:
+                lexout_o -> current.type = TOKEN_READ_BYTE;
+                consume(lexout_o -> source);
+                return 0;
+
+        case TOKEN_WORD:
+                lexout_o -> current.type = TOKEN_READ_WORD;
+                consume(lexout_o -> source);
+                return 0;
+
+        case TOKEN_DWORD:
+                lexout_o -> current.type = TOKEN_READ_DWORD;
+                consume(lexout_o -> source);
+                return 0;
+
+        case TOKEN_QWORD:
+                lexout_o -> current.type = TOKEN_READ_QWORD;
+                consume(lexout_o -> source);
+                return 0;
+
+        case TOKEN_PARAGRAPH:
+                lexout_o -> current.type = TOKEN_READ_PARAGRAPH;
+                consume(lexout_o -> source);
+                return 0;
+
+        default:
+                return LEX_UNKNOWN_TOKEN;
+
+        }
+
+}
+
 static int lexIdentifier (lexout_t *lexout_o) {
 
         consume(lexout_o -> source); // 'x'
@@ -205,49 +333,21 @@ static int lexIdentifier (lexout_t *lexout_o) {
                 return status;
         }
 
-        switch (peek(lexout_o -> source)) {
+        lexout_o -> current.type = getDataType(lexout_o);
 
-        case 'n':
-                lexout_o -> current.type = TOKEN_NIBBLE;
+        if (lexout_o -> current.type != TOKEN_BIT) {
                 consume(lexout_o -> source);
-                break;
+        }
 
-        case 'b':
-                lexout_o -> current.type = TOKEN_BYTE;
-                consume(lexout_o -> source);
-                break;
-
-        case 'w':
-                lexout_o -> current.type = TOKEN_WORD;
-                consume(lexout_o -> source);
-                break;
-
-        case 'd':
-                lexout_o -> current.type = TOKEN_DWORD;
-                consume(lexout_o -> source);
-                break;
-
-        case 'q':
-                lexout_o -> current.type = TOKEN_QWORD;
-                consume(lexout_o -> source);
-                break;
-
-        case 'p':
-                lexout_o -> current.type = TOKEN_PARAGRAPH;
-                consume(lexout_o -> source);
-                break;
-
-        default:
-                if (!IS_NUM[peek(lexout_o -> source)]) {
-                        return LEX_UNKNOWN_TOKEN;
-                }
-                lexout_o -> current.type = TOKEN_BIT;
-
+        status = bufferStatus(lexout_o -> source);
+        if (status != BUF_RD_OKK) {
+                return status;
         }
 
         if (!IS_NUM[peek(lexout_o -> source)]) {
                 return LEX_UNKNOWN_TOKEN;
         }
+
 
         int found_digit = 0;
         uint8_t value = 0;
@@ -300,8 +400,8 @@ int lex_next (lexout_t *lexout_o) {
                 if (status == BUF_RD_ERR) {
 
                         write_stderr("LEX ERROR: Read_Error.\n Inside space skipping.");
-                        lexout_o -> error_code = LEX_READ_ERROR;
                         prepareRdErrToken(lexout_o);
+                        lexout_o -> error_code = LEX_READ_ERROR;
                         return -1;
 
                 }
@@ -320,8 +420,8 @@ int lex_next (lexout_t *lexout_o) {
                 if (status == BUF_RD_ERR) {
 
                         write_stderr("LEX ERROR: Read_Error.\n Inside space skipping.");
-                        lexout_o -> error_code = LEX_READ_ERROR;
                         prepareRdErrToken(lexout_o);
+                        lexout_o -> error_code = LEX_READ_ERROR;
                         return -1;
 
                 }
@@ -381,11 +481,31 @@ int lex_next (lexout_t *lexout_o) {
                 consume(lexout_o -> source);
                 return 0;
 
-        case '<':
-                lexout_o -> current.type = TOKEN_READ;
-                lexout_o -> current.value = '<';
-                consume(lexout_o -> source);
+        case '<': {
+
+                int status = lexRead(lexout_o);
+
+                if (status == BUF_RD_ERR) {
+
+                        write_stderr("LEX ERROR: Read_Error: Unable to read source.");
+                        prepareRdErrToken(lexout_o);
+                        lexout_o -> error_code = LEX_READ_ERROR;
+                        return -1;
+
+                }
+
+                if (status == LEX_UNKNOWN_TOKEN) {
+
+                        write_stderr("LEX ERROR: Encountered_an_Unknown_Datatype: '%c'.", peek(lexout_o -> source));
+                        prepareUnknownToken(lexout_o);
+                        lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
+                        return -1;
+
+                }
+
                 return 0;
+
+        }
 
         case '.':
                 lexout_o -> current.type = TOKEN_RST_LHS;
@@ -398,23 +518,30 @@ int lex_next (lexout_t *lexout_o) {
                 int status = lexRegister(lexout_o);
 
                 if (status == BUF_RD_ERR) {
+
+                        write_stderr("LEX ERROR: Read_Error: Unable to read source.");
                         prepareRdErrToken(lexout_o);
                         lexout_o -> error_code = LEX_READ_ERROR;
                         return -1;
+
                 }
 
                 if (status == BUF_RD_EOF) {
+
                         write_stderr("LEX ERROR: Unexpected_EOF: After '*'.");
                         prepareUnknownToken(lexout_o);
                         lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
                         return -1;
+
                 }
 
                 if (status == LEX_UNKNOWN_TOKEN) {
+
                         write_stderr("LEX ERROR: Encountered_an_Unknown_Register_Name: '%c'.", peek(lexout_o -> source));
                         prepareUnknownToken(lexout_o);
                         lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
                         return -1;
+
                 }
 
                 return 0;
@@ -427,36 +554,48 @@ int lex_next (lexout_t *lexout_o) {
                 int status = lexIdentifier(lexout_o);
 
                 if (status == BUF_RD_ERR) {
+
+                        write_stderr("LEX ERROR: Read_Error: Unable to read source.");
                         prepareRdErrToken(lexout_o);
                         lexout_o -> error_code = LEX_READ_ERROR;
                         return -1;
+
                 }
 
                 if (status == BUF_RD_EOF) {
-                        write_stderr("LEX ERROR: Unexpected_EOF: After 'x'.");
+
+                        write_stderr("LEX ERROR: Unexpected_EOF: After identifier indicator.");
                         prepareUnknownToken(lexout_o);
                         lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
                         return -1;
+
                 }
 
                 if (status == LEX_IDENTIFIER_OVERFLOW) {
+
                         write_stderr("LEX ERROR: Identifier_Overflow: '%d...',\nGreater than bucket <INT(8): (%d)>", lexout_o -> current.value, UINT8_MAX);
                         prepareUnknownToken(lexout_o);
                         lexout_o -> error_code = LEX_IDENTIFIER_OVERFLOW;
                         return -1;
+
                 }
 
                 if (status == LEX_NO_IDENTIFIER_NAME) {
+
                         write_stderr("LEX ERROR: Identifier_Has_No_Name.");
                         prepareUnknownToken(lexout_o);
                         lexout_o -> error_code = LEX_NO_IDENTIFIER_NAME;
                         return -1;
+
                 }
 
                 if (status == LEX_UNKNOWN_TOKEN) {
-                        write_stderr("LEX ERROR: Expected a number but got '%c'.", peek(lexout_o -> source));
+
+                        write_stderr("LEX ERROR: Unexpected_Value:\nExpected a number after identifier indicator.");
+                        prepareUnknownToken(lexout_o);
                         lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
                         return -1;
+
                 }
 
                 return 0;

@@ -17,7 +17,19 @@ int main (void) {
                         break;
                 }
 
-                write_stdout("lexout -> %c\n", lexout -> current.value);
+                if (
+                        lexout -> current.type == TOKEN_BIT ||
+                        lexout -> current.type == TOKEN_NIBBLE ||
+                        lexout -> current.type == TOKEN_BYTE ||
+                        lexout -> current.type == TOKEN_WORD ||
+                        lexout -> current.type == TOKEN_DWORD ||
+                        lexout -> current.type == TOKEN_QWORD ||
+                        lexout -> current.type == TOKEN_PARAGRAPH
+                ) {
+                        write_stdout("lexout -> %d, type -> %d\n", lexout -> current.value, lexout -> current.type);
+                } else {
+                        write_stdout("lexout -> %c, type -> %d\n", lexout -> current.value, lexout -> current.type);
+                }
 
         }
 

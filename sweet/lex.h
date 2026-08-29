@@ -42,6 +42,7 @@ typedef enum {
         TOKEN_READ_DWORD,
         TOKEN_READ_QWORD,
         TOKEN_READ_PARAGRAPH,
+        TOKEN_READ_ASCII,
         TOKEN_RST_LHS,
         TOKEN_LPARAN,
         TOKEN_RPARAN,
