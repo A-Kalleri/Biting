@@ -79,8 +79,11 @@ bitting-sweet
         print till the size of mentioned datatype; '<xn<' prints nibble size from lhs or rp
 
 - loops
-        x0 > LR (loop register)
+        x0 > *l (loop register)
         ( variable ) { block }
+
+- print register
+        *p
 
 - functions
         f( args* ) { block }

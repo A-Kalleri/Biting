@@ -17,7 +17,7 @@ int main (void) {
                         break;
                 }
 
-                write_stderr("lexout -> %c", lexout -> current.value);
+                write_stdout("lexout -> %c\n", lexout -> current.value);
 
         }
 

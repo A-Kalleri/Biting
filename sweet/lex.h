@@ -23,7 +23,9 @@ typedef enum {
         TOKEN_ASCII,
         TOKEN_HIGH,
         TOKEN_LOW,
-        TOKEN_REG,
+        TOKEN_REG_PRINT,
+        TOKEN_REG_LOOP,
+        TOKEN_REG_RETURN,
         TOKEN_OR,
         TOKEN_AND,
         TOKEN_XOR,
@@ -52,7 +54,7 @@ typedef enum {
 
 typedef struct {
         token_type_t type;
-        uint64_t value;
+        uint8_t value;
 } token_t;
 
 typedef struct source_buf source_buf_t;
