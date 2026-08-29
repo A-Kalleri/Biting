@@ -66,15 +66,24 @@ bitting-sweet
 - #<variable>
         can store a single ascii chars and only be printed uses the same symbol table as of x variables
 
+- <<
+        prints lhs directly if not empty
+
 - <0 <variable>
         prints if lhs is 0/false
 
 - <1 <variable>
         prints if lhs is 1/true
 
+- <<datatype>
+        print till the size of mentioned datatype; '<xn' prints nibble size from lhs or rp
+
 - loops
-        x0 > LR (loop register)
+        x0 > *l (loop register)
         ( variable ) { block }
+
+- print register
+        *p
 
 - functions
         f( args* ) { block }
@@ -90,6 +99,9 @@ bitting-sweet
         
         use uint8_t for byte and uint16 for word and so on arrays
         once a part of bit-array it can only be indexed also a seperate function to seperate individual bits
+
+- post processing import expansion
+- variables with class names can be mixed with both files
 
 bitting-sour
 - parallel execution
