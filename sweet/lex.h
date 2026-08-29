@@ -3,7 +3,12 @@
 #include "reader.h"
 #include <stdint.h>
 
-#define LEX_INIT_FAIL 84824711 //enetfae-el
+/* Lexer magic numbers */
+#define LEX_INIT_FAIL                   84824711 //enetfae-el
+#define LEX_IDENTIFIER_OVERFLOW         9165119 // ovarflo
+#define LEX_NO_IDENTIFIER_NAME          1076116 // perella
+#define LEX_UNKNOWN_TOKEN               6287116 // areyela
+#define LEX_READ_ERROR                  1674116 // vaynala
 
 typedef enum {
 
@@ -65,3 +70,5 @@ lexout_t *lexout_constructor (void);
 void lexout_destructor (lexout_t **lexout_o);
 
 int lexout_init (lexout_t *lexout_o, const char *filename);
+
+int lex_next (lexout_t *lexout_o);

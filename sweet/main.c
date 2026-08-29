@@ -1,27 +1,27 @@
-#include "reader.h"
+#include "lex.h"
 #include "helper.h"
 
 int main (void) {
 
-    source_buf_t *sbuf = source_buf_constructor(256);
-    load_file(sbuf, "test");
+        lexout_t *lexout = lexout_constructor();
+        lexout_init(lexout, "test");
 
-    for (;;) {
+        for (;;) {
 
-        if (read_to_buffer(sbuf) != 0) {
-            break;
+                if (lex_next(lexout) != 0) {
+                        write_stderr("lex error: %d", lexout -> error_code);
+                        return lexout -> error_code;
+                }
+
+                if (lexout -> current.type == TOKEN_EOF) {
+                        break;
+                }
+
+                write_stderr("lexout -> %c", lexout -> current.value);
+
         }
-        
-        if (sbuf -> length == 0) {
-            write_stderr("\nEOF\n");
-            break;
-        }
 
-        write_stderr("%.*s", (int)sbuf -> length, sbuf -> buffer);
-
-    }
-
-    source_buf_destructor(&sbuf);
-    return 0;
+        lexout_destructor(&lexout);
+        return 0;
 
 }
