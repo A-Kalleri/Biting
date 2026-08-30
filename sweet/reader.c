@@ -82,3 +82,13 @@ void consume (source_buf_t *sbuf_o) {
         }
 
 }
+
+int lookahead (source_buf_t *sbuf_o) {
+
+        if (sbuf_o -> position + 1 < sbuf_o -> length) {
+                return sbuf_o -> buffer[sbuf_o -> position + 1];
+        } else {
+                return -1;
+        }
+
+}

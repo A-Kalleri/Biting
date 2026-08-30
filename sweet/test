@@ -1,12 +1,23 @@
-10 1101 1 
-;hello man i am barely  hereee   
 
-&& || *r ^ 
-| &
+or
+and
+xor
+not
+feed
+read
 
-x13
+Or
+AnD
+Xor
+Not
+FEeD
+reAD
 
-< << <xn <x <x xn
+OR
+AND
+XOR
+NOT
+FEED
+READ
 
-peek only after buffer status
-safer peek error message
+move static to another internals

@@ -23,3 +23,4 @@ int load_file (source_buf_t *sbuf_o, const char *filename);
 int read_to_buffer (source_buf_t *sbuf_o);
 
 void consume (source_buf_t *sbuf_o);
+int lookahead (source_buf_t *sbuf_o);

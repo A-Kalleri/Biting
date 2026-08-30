@@ -6,6 +6,7 @@
 /* Lexer magic numbers */
 #define LEX_INIT_FAIL                   84824711 //enetfae-el
 #define LEX_IDENTIFIER_OVERFLOW         9165119 // ovarflo
+#define LEX_KEYWORD_OVERFLOW            1629167 // vartovr-ea
 #define LEX_NO_IDENTIFIER_NAME          1076116 // perella
 #define LEX_UNKNOWN_TOKEN               6287116 // areyela
 #define LEX_READ_ERROR                  1674116 // vaynala

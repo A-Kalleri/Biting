@@ -24,7 +24,8 @@ int main (void) {
                         lexout -> current.type == TOKEN_WORD ||
                         lexout -> current.type == TOKEN_DWORD ||
                         lexout -> current.type == TOKEN_QWORD ||
-                        lexout -> current.type == TOKEN_PARAGRAPH
+                        lexout -> current.type == TOKEN_PARAGRAPH ||
+                        lexout -> current.type == TOKEN_ASCII
                 ) {
                         write_stdout("lexout -> %d, type -> %d\n", lexout -> current.value, lexout -> current.type);
                 } else {

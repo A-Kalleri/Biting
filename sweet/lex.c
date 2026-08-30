@@ -1,6 +1,7 @@
-#include <alloca.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "lex.h"
 #include "reader.h"
@@ -9,6 +10,11 @@
 #define BUF_RD_OKK      411636 // nellatha
 #define BUF_RD_ERR      272726 // reatearr
 #define BUF_RD_EOF      742677 // eantaeae
+
+#define IDENT_BITTS     'X'
+#define IDENT_ASCII     'A'
+
+#define PASS_THROUGH    47627 // neastea
 
 static const uint8_t IS_SPACE[256] = {
 
@@ -34,7 +40,44 @@ static const uint8_t IS_NUM[256] = {
 
 };
 
-static const uint8_t GET_DATATYPE [256] = {
+static const uint8_t IS_KEYWORD_START[256] = {
+
+        ['o'] = 1,
+        ['a'] = 1,
+        ['x'] = 1,
+        ['f'] = 1,
+        ['r'] = 1,
+        ['n'] = 1,
+
+};
+
+static const uint8_t IS_KEYWORD_LETTER[256] = {
+
+        ['o'] = 1,
+        ['a'] = 1,
+        ['x'] = 1,
+        ['f'] = 1,
+        ['r'] = 1,
+        ['n'] = 1,
+        ['d'] = 1,
+        ['e'] = 1,
+        ['t'] = 1,
+
+};
+
+static const char *KEYWORDS[] = {
+
+        "or",
+        "and",
+        "xor",
+        "feed",
+        "read",
+        "not",
+        NULL,
+
+};
+
+static const uint8_t GET_DATATYPE[256] = {
 
         ['n'] = TOKEN_NIBBLE,
         ['b'] = TOKEN_BYTE,
@@ -84,7 +127,7 @@ int lexout_init (lexout_t *lexout_o, const char *filename) {
 
 }
 
-static int peek(source_buf_t *sbuf) {
+static int current_char (source_buf_t *sbuf) {
 
         /* Requires bufferStatus() == BUF_RD_OKK.
          * Otherwise, buffer[position] may be out of bounds.
@@ -121,7 +164,7 @@ static int skipSpaces (lexout_t *lexout_o) {
                         return status;
                 }
 
-                if (!IS_SPACE[peek(lexout_o -> source)]) {
+                if (!IS_SPACE[current_char(lexout_o -> source)]) {
                         return 0;
                 }
 
@@ -142,7 +185,7 @@ static int skipComment (lexout_t *lexout_o) {
                         return status;
                 }
 
-                if (peek(lexout_o -> source) == '\n') {
+                if (current_char(lexout_o -> source) == '\n') {
                         consume(lexout_o -> source);
                         return 0;
                 }
@@ -177,7 +220,7 @@ static int lexRegister (lexout_t *lexout_o) {
                 return status;
         }
 
-        switch (peek(lexout_o -> source)) {
+        switch (current_char(lexout_o -> source)) {
 
         case 'P':
         case 'p':
@@ -209,7 +252,7 @@ static int lexRegister (lexout_t *lexout_o) {
 
 static token_type_t getDataType (lexout_t *lexout_o) {
 
-        uint8_t c = (uint8_t)peek(lexout_o -> source);
+        uint8_t c = (uint8_t)current_char(lexout_o -> source);
         token_type_t type = GET_DATATYPE[c];
 
         if (type == TOKEN_UNKNOWN) {
@@ -237,7 +280,7 @@ static int lexRead (lexout_t *lexout_o) {
         }
 
 
-        switch (peek(lexout_o -> source)) {
+        switch (current_char(lexout_o -> source)) {
 
         case '<':
                 lexout_o -> current.type = TOKEN_READ_LHS;
@@ -324,27 +367,34 @@ static int lexRead (lexout_t *lexout_o) {
 
 }
 
-static int lexIdentifier (lexout_t *lexout_o) {
+static int lexIdentifier (lexout_t *lexout_o, const char item) {
 
-        consume(lexout_o -> source); // 'x'
+        consume(lexout_o -> source); // 'x' / '#'
+
+        if (item == IDENT_BITTS) {
+
+                int status = bufferStatus(lexout_o -> source);
+                if (status != BUF_RD_OKK) {
+                        return status;
+                }
+
+                lexout_o -> current.type = getDataType(lexout_o);
+                if (lexout_o -> current.type != TOKEN_BIT) {
+                        consume(lexout_o -> source);
+                }
+
+        } else if (item == IDENT_ASCII) {
+                lexout_o -> current.type = TOKEN_ASCII;
+        } else {
+                return LEX_UNKNOWN_TOKEN;
+        }
 
         int status = bufferStatus(lexout_o -> source);
         if (status != BUF_RD_OKK) {
                 return status;
         }
 
-        lexout_o -> current.type = getDataType(lexout_o);
-
-        if (lexout_o -> current.type != TOKEN_BIT) {
-                consume(lexout_o -> source);
-        }
-
-        status = bufferStatus(lexout_o -> source);
-        if (status != BUF_RD_OKK) {
-                return status;
-        }
-
-        if (!IS_NUM[peek(lexout_o -> source)]) {
+        if (!IS_NUM[current_char(lexout_o -> source)]) {
                 return LEX_UNKNOWN_TOKEN;
         }
 
@@ -363,7 +413,7 @@ static int lexIdentifier (lexout_t *lexout_o) {
                         return status;
                 }
 
-                int c = peek(lexout_o -> source);
+                int c = current_char(lexout_o -> source);
                 if (!IS_NUM[c]) {
                         lexout_o -> current.value = value;
                         return found_digit ? 0 : LEX_NO_IDENTIFIER_NAME;
@@ -383,6 +433,118 @@ static int lexIdentifier (lexout_t *lexout_o) {
 
         lexout_o -> current.value = value;
         return found_digit ? 0 : LEX_NO_IDENTIFIER_NAME;
+
+}
+
+static int lexOpNames (lexout_t *lexout_o) {
+
+        int c = current_char(lexout_o -> source);
+
+        if (c >= 'A' && c <= 'Z') {
+                c += 'a' - 'A';
+        }
+
+        if (!IS_KEYWORD_START[(uint8_t)c]) {
+                return PASS_THROUGH;
+        }
+
+        if (c == 'x' || c == 'X') {
+
+                int status = bufferStatus(lexout_o -> source);
+                if (status != BUF_RD_OKK) {
+                        return status;
+                }
+
+                if (
+                        lookahead(lexout_o -> source) != 'o' &&
+                        lookahead(lexout_o -> source) != 'O'
+                ) {
+                        return PASS_THROUGH; // skip
+                }
+
+        }
+
+        char tmp[256];
+        size_t length = 0;
+
+        for (;;) {
+
+                int status = bufferStatus(lexout_o -> source);
+
+                if (status == BUF_RD_EOF) {
+                        tmp[length] = '\0';
+                        break;
+                }
+
+                if (status != BUF_RD_OKK) {
+                        return status;
+                }
+
+                int c = current_char(lexout_o -> source);
+
+                if (c >= 'A' && c <= 'Z') {
+                        c += 'a' - 'A';
+                }
+
+                if (!IS_KEYWORD_LETTER[(uint8_t)c]) {
+                        tmp[length] = '\0';
+                        break;
+                }
+
+                if (length >= sizeof(tmp) - 1) {
+                        return LEX_KEYWORD_OVERFLOW;
+                }
+
+                tmp[length++] = c;
+                consume(lexout_o -> source);
+
+        }
+
+        int i;
+        for (i = 0; KEYWORDS[i] != NULL; ++i) {
+
+                if (strcmp(tmp, KEYWORDS[i]) == 0) {
+                        break;
+                }
+
+        }
+
+        switch (i) {
+
+        case 0:
+                lexout_o -> current.type = TOKEN_OR;
+                lexout_o -> current.value = '|';
+                return 0;
+
+        case 1:
+                lexout_o -> current.type = TOKEN_AND;
+                lexout_o -> current.value = '&';
+                return 0;
+
+        case 2:
+                lexout_o -> current.type = TOKEN_XOR;
+                lexout_o -> current.value = '^';
+                return 0;
+
+        case 3:
+                lexout_o -> current.type = TOKEN_FEED;
+                lexout_o -> current.value = '>';
+                return 0;
+
+        case 4:
+                lexout_o -> current.type = TOKEN_READ;
+                lexout_o -> current.value = '<';
+                return 0;
+
+        case 5:
+                lexout_o -> current.type = TOKEN_NOT;
+                lexout_o -> current.value = '!';
+                return 0;
+
+        default:
+                return LEX_UNKNOWN_TOKEN;
+
+        }
 
 }
 
@@ -406,7 +568,7 @@ int lex_next (lexout_t *lexout_o) {
 
                 }
 
-                if (peek(lexout_o -> source) != ';') {
+                if (current_char(lexout_o -> source) != ';') {
                         break;
                 }
 
@@ -425,16 +587,49 @@ int lex_next (lexout_t *lexout_o) {
                         return -1;
 
                 }
+
         }
 
         /* Safe to access once after the loop:
          * skipSpaces() maintains a valid buffer position.
          */
 
-        switch (peek(lexout_o -> source)) {
+        int status = lexOpNames(lexout_o);
 
-        case '1':
-                lexout_o -> current.type = TOKEN_HIGH;
+        if (status == BUF_RD_ERR) {
+
+                write_stderr("LEX ERROR: Read_Error: Unable to read source.");
+                prepareRdErrToken(lexout_o);
+                lexout_o -> error_code = LEX_READ_ERROR;
+                return -1;
+
+        }
+
+        if (status == LEX_KEYWORD_OVERFLOW) {
+
+                write_stderr("LEX ERROR: Unexpectedly_Long_Keyword:\nThere are no keywords this long.");
+                prepareUnknownToken(lexout_o);
+                lexout_o -> error_code = LEX_KEYWORD_OVERFLOW;
+                return -1;
+
+        }
+
+        if (status == LEX_UNKNOWN_TOKEN) {
+
+                write_stderr("LEX ERROR: Encountered_an_Unknown_Keyword.");
+                prepareUnknownToken(lexout_o);
+                lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
+                return -1;
+
+        }
+
+        if (status != PASS_THROUGH) {
+                return 0;
+        }
+
+        switch (current_char(lexout_o -> source)) {
+
+        case '1': lexout_o -> current.type = TOKEN_HIGH;
                 lexout_o -> current.value = '1';
                 consume(lexout_o -> source);
                 return 0;
@@ -444,6 +639,28 @@ int lex_next (lexout_t *lexout_o) {
                 lexout_o -> current.value = '0';
                 consume(lexout_o -> source);
                 return 0;
+
+        case '(':
+                lexout_o -> current.type = TOKEN_LPARAN;
+                lexout_o -> current.value = '(';
+                consume(lexout_o -> source);
+                return 0;
+
+        case ')':
+                lexout_o -> current.type = TOKEN_RPARAN;
+                lexout_o -> current.value = ')';
+                consume(lexout_o -> source);
+                return 0;
+
+        case '{':
+                lexout_o -> current.type = TOKEN_LCURLY;
+                lexout_o -> current.value = '{';
+                consume(lexout_o -> source);
+                return 0;
+
+        case '}':
+                lexout_o -> current.type = TOKEN_RCURLY;
+                lexout_o -> current.value = '}';
 
         case '|':
                 lexout_o -> current.type = TOKEN_OR;
@@ -496,7 +713,7 @@ int lex_next (lexout_t *lexout_o) {
 
                 if (status == LEX_UNKNOWN_TOKEN) {
 
-                        write_stderr("LEX ERROR: Encountered_an_Unknown_Datatype: '%c'.", peek(lexout_o -> source));
+                        write_stderr("LEX ERROR: Encountered_an_Unknown_Datatype.");
                         prepareUnknownToken(lexout_o);
                         lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
                         return -1;
@@ -537,7 +754,7 @@ int lex_next (lexout_t *lexout_o) {
 
                 if (status == LEX_UNKNOWN_TOKEN) {
 
-                        write_stderr("LEX ERROR: Encountered_an_Unknown_Register_Name: '%c'.", peek(lexout_o -> source));
+                        write_stderr("LEX ERROR: Encountered_an_Unknown_Register_Name.");
                         prepareUnknownToken(lexout_o);
                         lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
                         return -1;
@@ -548,10 +765,11 @@ int lex_next (lexout_t *lexout_o) {
 
         }
 
+        case '#':
         case 'X':
         case 'x': {
 
-                int status = lexIdentifier(lexout_o);
+                int status = current_char(lexout_o -> source) == '#' ? lexIdentifier(lexout_o, IDENT_ASCII) : lexIdentifier(lexout_o, IDENT_BITTS);
 
                 if (status == BUF_RD_ERR) {
 
@@ -603,7 +821,7 @@ int lex_next (lexout_t *lexout_o) {
         }
 
         default:
-                write_stderr("LEX ERROR: Unknown_Token_Detected: '%c',\nbarely know her", peek(lexout_o -> source));
+                write_stderr("LEX ERROR: Unknown_Token_Detected.");
                 prepareUnknownToken(lexout_o);
                 lexout_o -> error_code = LEX_UNKNOWN_TOKEN;
                 return -1;
