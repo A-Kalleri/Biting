@@ -2,7 +2,7 @@
 
 Bitting is an esoteric programming language based around bit-level operations.
 
-Bitting currently has two planned versions:
+Bitting currently has two versions:
 
 ## Bitter
 
@@ -12,7 +12,6 @@ manual approach to programming with bits.
 Bitter currently has:
 
 - No loops
-- No conditional branches
 - Fixed operations
 - Explicit bit manipulation
 
@@ -39,7 +38,9 @@ bitter <filename>.bitb
 it will provide higher-level features such as:
 
 - Loops
-- Conditional branching
+- ASCII variables
+- Functions
+- Bit array
 
 ## Status of Sweet
 

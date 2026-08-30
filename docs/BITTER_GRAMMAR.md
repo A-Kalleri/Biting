@@ -48,6 +48,7 @@ Variable Rules:
 - Valid varable indices range from 0 to 255.
 
 The variables are internally mapped to an array of bits, and all the variables are initialized to empty at start.
+
 The size of the array currently is `0 - 255`.
 
 ## NOT Operator
@@ -58,12 +59,7 @@ The `~` or the `!` operator negates the value inside the LHS register.
 1 | 0 !
 ```
 
-The operation:
-```text
-1 | 0
-```
-
-produces `1` and stores it in LHS. The `!` operator then negates the value to `0`, so LHS has the value `0` at the end.
+`1 | 0` produces `1` and stores it in LHS. The `!` operator then negates the value to `0`, so LHS has the value `0` at the end.
 
 ## Feed Operator
 
@@ -75,13 +71,7 @@ For example:
 1 | 0 > x0
 ```
 
-The operation:
-```text
-1 | 0
-```
-
-produces `1`.
-
+`1 | 0` produces `1`.
 The result is then stored in `x0`.
 
 ## Read Operator
@@ -110,8 +100,8 @@ The result can also be printed directly:
 
 Since RP is empty, the `<` operator prints the value currently stored in LHS.
 
-**RP Priority**
-The `<` operator always prioritizes RP.
+>[!NOTE]
+>The `<` operator always prioritizes RP.
 
 The priority is:
 ```text
@@ -127,12 +117,7 @@ Example:
 0 | 0 < . 1 <
 ```
 
-The first operation:
-```text
-0 | 0
-```
-
-produces `0`, and stores it in LHS.
+`0 | 0` produces `0`, and stores it in LHS.
 
 The `<` operator prints the LHS value.
 
@@ -142,9 +127,9 @@ Then the value `1` is loaded into LHS and printed.
 
 Therefore, the output is `01`.
 
-**NOTE:** LHS must be empty before a new value is loaded into it.
-```text
-1 0
-```
-
-would result in an error if 1 is already stored in LHS and has not been reset.
+>[!IMPORTANT]
+>LHS must be empty before a new value is loaded into it.
+>```text
+>1 0
+>```
+>would result in an error if 1 is already stored in LHS and has not been reset.
