@@ -1,0 +1,60 @@
+;A 4-bit full adder
+;With user input numbers
+
+; First number
+? *r > x3. ;msb
+? *r > x2.
+? *r > x1.
+? *r > x0. ;lsb
+
+; Second number
+? *r > x7. ;msb
+? *r > x6.
+? *r > x5.
+? *r > x4. ;lsb
+
+;------------
+x0 ^ x4 > x8.
+x0 & x4 > x9.
+
+0 ^ x8 > x10. ;sum
+
+x8 & 0 > x11.
+x11 | x9 > x12. ;carry
+
+;------------
+x1 ^ x5 > x13.
+x1 & x5 > x14.
+
+x12 ^ x13 > x15. ;sum
+
+x13 & x12 > x16.
+x16 | x14 > x17. ;carry
+
+;------------
+x2 ^ x6 > x18.
+x2 & x6 > x19.
+
+x17 ^ x18 > x20. ;sum
+
+x17 & x18 > x21.
+x21 | x19 > x22. ;carry
+
+;------------
+x3 ^ x7 > x23.
+x3 & x7 > x24.
+
+x22 ^ x23 > x25. ;sum
+
+x22 & x23 > x26.
+x26 | x24 > x27. ;carry
+
+;------------
+
+;carry
+x27<.    ;lsb
+
+x25<.
+x20<.
+x15<.
+x10<.   ;msb

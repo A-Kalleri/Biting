@@ -58,7 +58,7 @@ The `.` operator is used to reset LHS.
 
 ### RP
 
-The **RP** (Read/Print) register stores a value that can be printed using the `<` operator.
+The **RP** (Print) register stores a value that can be printed using the `<` operator.
 
 RP can contain:
 
@@ -85,6 +85,12 @@ The **OP** (Operation) register stores the opcode of the operation.
 It is also emptied after an operation.
 
 It can store any opcode of the boolean operation supported by the language.
+
+### RR
+
+The **RR** (Read) register stores the value that is read from the standard input using `?` operator.
+
+It holds the user input `1` or `0`.
 
 ## Variables
 
@@ -131,6 +137,9 @@ program     ->  statement
 statement   ->  expression,
                 expression feed identifier,
                 expression feed register,
+                register feed identifier,
+                register feed register,
+                show,
                 read,
                 reset,
                 not
@@ -141,7 +150,9 @@ reset       ->  .
 
 feed        ->  >
 
-read        ->  <
+show        ->  <
+
+read        ->  ?
 
 not         ->  ~,
                 !

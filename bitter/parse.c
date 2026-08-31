@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "lex.h"
@@ -13,6 +14,7 @@ typedef struct registers {
         uint8_t rhs;
         uint8_t op;
         uint8_t rp;
+        uint8_t rr;
 
 } registers_t;
 
@@ -179,6 +181,12 @@ static int parseOperand(parse_t *parse_o) {
                 }
                 return parse_o -> current.value;
 
+        case TOKEN_REG_PRNT:
+                return parse_o -> reg_o -> rp;
+
+        case TOKEN_REG_READ:
+                return parse_o -> reg_o -> rr;
+
         default:
                 write_stderr("PARSE ERROR: Unknown_Operand: '%c'.\nABORT.", parse_o -> current.value);
                 parse_o -> error_code = PAR_UNKNOWN_OPERAND;
@@ -257,7 +265,7 @@ static int parseStatement(parse_t *parse_o) {
                 parse_o -> reg_o -> lhs = REG_EMPTY;
                 return 0;
 
-        case TOKEN_READ:
+        case TOKEN_SHOW:
                 advanceParse(parse_o);
                 if (parse_o -> reg_o -> rp != REG_EMPTY){
                         write_stdout_char(parse_o -> reg_o -> rp);
@@ -266,11 +274,21 @@ static int parseStatement(parse_t *parse_o) {
                         write_stdout_char(parse_o -> reg_o -> lhs);
                 } else {
 
-                        write_stderr("PARSE ERROR: Read_on_Empty_Registers\nRP and LHS are both empty.\nABORT.");
+                        write_stderr("PARSE ERROR: Show_on_Empty_Registers\nRP and LHS are both empty.\nABORT.");
                         parse_o -> error_code = PAR_OP_ON_EMPTY_REG;
                         return 1;
 
                 }
+                return 0;
+
+        case TOKEN_READ:
+                advanceParse(parse_o);
+                uint8_t input = read_stdin_bit();
+                if (input == REG_EMPTY) {
+                        return 0;
+                }
+
+                parse_o -> reg_o -> rr = input;
                 return 0;
 
         default:
@@ -286,6 +304,11 @@ static int parseStatement(parse_t *parse_o) {
 
         case TOKEN_FEED:
                 advanceParse(parse_o);
+                if (parse_o -> reg_o -> lhs == REG_EMPTY) {
+                        write_stderr("PARSE ERROR: Feed_Error:\nTrying to feed 'EMPTY',\nLHS is empty.\nABORT.");
+                        parse_o -> error_code = PAR_SYNTAX_ERROR;
+                        return 1;
+                }
                 if (parse_o -> current.type == TOKEN_IDENTIFIER) {
                         parse_o -> symbol_array[parse_o -> current.value] = parse_o -> reg_o -> lhs;
                         advanceParse(parse_o);

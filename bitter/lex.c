@@ -286,7 +286,7 @@ token_t lex_next (lex_t *lex_o) {
                 return tok;
 
         case '<':
-                tok.type = TOKEN_READ;
+                tok.type = TOKEN_SHOW;
                 tok.value = '<';
                 consume(lex_o -> source);
                 return tok;
@@ -296,19 +296,33 @@ token_t lex_next (lex_t *lex_o) {
                 tok.value = '.';
                 consume(lex_o -> source);
                 return tok;
+
+        case '?':
+                tok.type = TOKEN_READ;
+                tok.value = '?';
+                consume(lex_o -> source);
+                return tok;
         
-        case 'r':
-        case 'R':
+        case '*':
                 consume(lex_o -> source);
                 if (
-                        getChar(lex_o -> source) == 'p' ||
-                        getChar(lex_o -> source) == 'P'
+                        getChar(lex_o -> source) == 'P' ||
+                        getChar(lex_o -> source) == 'p'
                 ) {
                         tok.type = TOKEN_REG_PRNT;
                         tok.value = 'p';
                         consume(lex_o -> source);
                         return tok;
+                } else if (
+                        getChar(lex_o -> source) == 'R' ||
+                        getChar(lex_o -> source) == 'r'
+                ) {
+                        tok.type = TOKEN_REG_READ;
+                        tok.value = 'r';
+                        consume(lex_o -> source);
+                        return tok;
                 }
+
                 write_stderr("LEX ERROR: Unknown_Register_Named.\nWith value: '%c'.\nABORT.\n", getChar(lex_o -> source));
                 return getTokUnknown('r');
 

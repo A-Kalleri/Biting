@@ -16,8 +16,9 @@
 | `^` | XOR |
 | `~` / `!` | NOT |
 | `>` | Feed |
-| `<` | Read |
+| `<` | Show |
 | `.` | Reset LHS |
+| `?` | Read |
 
 ## Registers
 
@@ -27,11 +28,17 @@
 
 ### RP
 
-**RP** (Read/Print register) stores a value that can be printed using the `<` Read operator.
+**RP** (Print register) written `*p` stores a value that can be printed using the `<` Show operator.
 
 The `<` operator prioritizes RP over LHS.
 
 If RP contains a value, `<` prints RP. If RP is empty, `<` prints LHS, and if both are empty, `<` prints nothing.
+
+### RR
+
+**RR** (Read register) written `*r` stores a value that is read from the standard input.
+
+It only stores a bit value `1` or `0`
 
 ## Variables
 
@@ -74,23 +81,23 @@ For example:
 `1 | 0` produces `1`.
 The result is then stored in `x0`.
 
-## Read Operator
+## Show Operator
 
-The `<` Read operator prints a value to standard output.
+The `<` Show operator prints a value to standard output.
 
-There are two ways to use the Read operator.
+There are two ways to use the Show operator.
 
-### Reading RP
+### Showing RP
 
 A value can first be stored in the RP register:
 
 ```text
-1 | 0 > rp <
+1 | 0 > *p <
 ```
 
 This stores the result of `1 | 0` in RP and then prints RP.
 
-### Reading LHS
+### Showing LHS
 
 The result can also be printed directly:
 
@@ -133,3 +140,17 @@ Therefore, the output is `01`.
 >1 0
 >```
 >would result in an error if 1 is already stored in LHS and has not been reset.
+
+## Read Operator
+
+The `?` operator is used to read a bit from the standard input into the RR.
+
+```text
+? *r > x0
+```
+
+`?` reads the user input and stores it into RR.
+
+The value from RR is then fed into x0.
+
+x0 now contains the user input.
