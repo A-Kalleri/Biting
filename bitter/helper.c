@@ -16,6 +16,19 @@ void write_stderr (const char *fmt, ...) {
 
 }
 
+void write_stderr_info (size_t line, size_t column, const char *fmt, ...) {
+
+        va_list args;
+        va_start(args, fmt);
+
+        vfprintf(stderr, fmt, args);
+        fprintf(stderr, "Error Detected on Line[%zu], Column[%zu]\nABORT.\n", line, column);
+        fflush(stderr);
+
+        va_end(args);
+
+}
+
 void write_stdout_char (const uint8_t c) {
         printf("%d", c);
         fflush(stdout);
