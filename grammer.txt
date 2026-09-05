@@ -11,9 +11,10 @@ bitting-bitter :
 
         ><variable>     :      store into variable.
         <<variable>     :      print variable.
+        ?               :      read variable into *r
         .               :      reset lhs
 
-        rp/RP           :       print register
+        *p/*P           :       print register
         
         operations accumulate into reg_lhs
 
@@ -36,7 +37,8 @@ expression      ->      operand,
                         operand operator operand,
                         operand (operator operand...)
 
-register        ->      RP
+register        ->      *r,
+                        *p
 
 reset           ->      .
 

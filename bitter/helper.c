@@ -9,6 +9,7 @@ void write_stderr (const char *fmt, ...) {
         va_start(args, fmt);
 
         vfprintf(stderr, fmt, args);
+        fprintf(stderr, "\nABORT.\n");
         fflush(stderr);
 
         va_end(args);

@@ -74,6 +74,9 @@ lex_t *lex_constructor (const char *filename) {
                 return NULL;
         }
 
+        _lex_image -> line_static = 1;
+        _lex_image -> column_static = 1;
+
         return _lex_image;
 
 }
@@ -131,7 +134,14 @@ static int skipSpaces (lex_t *lex_o) {
                         return 0;
                 }
 
+                if (getChar(lex_o -> source) == '\n') {
+                        lex_o -> line_static++;
+                        lex_o -> column_static = 1;
+                        continue;
+                }
+
                 consume(lex_o -> source);
+                lex_o -> column_static++;
 
         }
 
@@ -140,6 +150,7 @@ static int skipSpaces (lex_t *lex_o) {
 static int skipComment (lex_t *lex_o) {
 
         consume(lex_o -> source); // ';'
+        lex_o -> column_static++;
 
         for (;;) {
 
@@ -150,10 +161,13 @@ static int skipComment (lex_t *lex_o) {
 
                 if (getChar(lex_o -> source) == '\n') {
                         consume(lex_o -> source);
+                        lex_o -> line_static++;
+                        lex_o -> column_static = 1;
                         return 0;
                 }
 
                 consume(lex_o -> source);
+                lex_o -> column_static++;
 
         }
 
@@ -164,6 +178,7 @@ static int lexIdentifier (lex_t *lex_o, uint8_t *value) {
         int found_digit = 0;
         *value = 0;
         consume(lex_o -> source); // 'x'
+        lex_o -> column_static++;
 
         for (;;) {
 
@@ -188,6 +203,7 @@ static int lexIdentifier (lex_t *lex_o, uint8_t *value) {
 
                 found_digit = 1;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
 
         }
 
@@ -240,71 +256,107 @@ token_t lex_next (lex_t *lex_o) {
         case '1':
                 tok.type = TOKEN_HIGH;
                 tok.value = '1';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '0':
                 tok.type = TOKEN_LOW;
                 tok.value = '0';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '|':
                 tok.type = TOKEN_OR;
                 tok.value = '|';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '&':
                 tok.type = TOKEN_AND;
                 tok.value = '&';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '^':
                 tok.type = TOKEN_XOR;
                 tok.value = '^';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '~':
                 tok.type = TOKEN_NOT;
                 tok.value = '~';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '!':
                 tok.type = TOKEN_NOT;
                 tok.value = '!';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '>':
                 tok.type = TOKEN_FEED;
                 tok.value = '>';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '<':
                 tok.type = TOKEN_SHOW;
                 tok.value = '<';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '.':
                 tok.type = TOKEN_RST_LHS;
                 tok.value = '.';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         case '?':
                 tok.type = TOKEN_READ;
                 tok.value = '?';
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
         
         case '*':
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 if (
                         getChar(lex_o -> source) == 'P' ||
                         getChar(lex_o -> source) == 'p'
@@ -312,6 +364,7 @@ token_t lex_next (lex_t *lex_o) {
                         tok.type = TOKEN_REG_PRNT;
                         tok.value = 'p';
                         consume(lex_o -> source);
+                        lex_o -> column_static++;
                         return tok;
                 } else if (
                         getChar(lex_o -> source) == 'R' ||
@@ -320,6 +373,7 @@ token_t lex_next (lex_t *lex_o) {
                         tok.type = TOKEN_REG_READ;
                         tok.value = 'r';
                         consume(lex_o -> source);
+                        lex_o -> column_static++;
                         return tok;
                 }
 
@@ -328,6 +382,9 @@ token_t lex_next (lex_t *lex_o) {
 
         case 'x': {
                 uint8_t value = 0;
+
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
 
                 int status = lexIdentifier(lex_o, &value);
                 if (status == RD_ERR) {
@@ -356,7 +413,10 @@ token_t lex_next (lex_t *lex_o) {
                 tok = getTokUnknown(lex_o -> source -> buffer[lex_o -> source -> position]);
                 write_stderr("LEX ERROR: Unknown_Token_Detected.\nABORT.\n");
                 lex_o -> error_code = LEX_UNKNOWN_TOKEN;
+                tok.line = lex_o -> line_static;
+                tok.column = lex_o -> column_static;
                 consume(lex_o -> source);
+                lex_o -> column_static++;
                 return tok;
 
         }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 
 typedef enum {
@@ -30,12 +31,18 @@ typedef struct {
         token_type_t type;
         uint8_t value;
 
+        size_t line;
+        size_t column;
+
 } token_t;
 
 typedef struct {
 
         source_buf_t *source;
         int error_code;
+
+        size_t line_static;
+        size_t column_static;
 
 } lex_t;
 
